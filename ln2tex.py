@@ -27,7 +27,10 @@ if __name__ == '__main__':
         if not os.path.exists(texfile) or os.path.getmtime(texfile) < os.path.getmtime(mdfile) or args.force:
 
             print('Processing file [%s]...' % mdfile)
-
             ln.export_texfile(dest=texfile)
+
+        else:
+            print('File [%s] exists and is up-to-date.' % texfile)
+
 
 

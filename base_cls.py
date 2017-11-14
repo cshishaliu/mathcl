@@ -3,11 +3,174 @@ import os
 import re
 import shutil
 
-import base_fp as fp
+#import base_fp as fp
 
 ################################################################################
 # class: ProblemList
 ################################################################################
+
+pe_md_tmpl = """\
+#### label: `%(label)s`
+
+#### tag: `%(tag)s`
+
+#### topics: `%(topics)s`
+
+#### problem
+
+%(problem)s
+
+#### hint
+
+%(hint)s
+
+#### answer
+
+%(answer)s
+
+#### solution
+
+%(solution)s
+
+#### note
+
+%(note)s
+
+#### comment
+
+%(comment)s
+
+#### info
+
+%(info)s
+
+"""
+
+pe_tex_tmpl = """\
+\\MathclLabel{%(label)s}
+\\MathclTag{%(tag)s}
+\\MathclTopics{%(topics)s}
+
+\\MathclProblem{%%
+%(problem)s
+}
+\\MathclProblemFig{%(problemfig)s}{%(problemfigwidth)s}{%(problemfigheight)s}
+\\MathclProblemFigPlace{%(problemfigplace)s}
+
+\\MathclAnswer{%(answer)s}
+\\MathclHint{%(hint)s}
+
+\\MathclSolution{%%
+%(solution)s
+}
+\\MathclSolutionFig{%(solutionfig)s}{%(solutionfigwidth)s}{%(solutionfigheight)s}
+\\MathclSolutionFigPlace{%(solutionfigplace)s}
+
+\\MathclNote{%(note)s}
+\\MathclComment{%(comment)s}
+\\MathclInfo{%(info)s}
+
+"""
+
+
+def pe_md2tex_generic(text):
+    return text
+
+
+def pe_md2tex_figproc(text):
+
+    fig = figwidth = figheight = figplace = ''
+    text_list = re.split('(!\[.*\]\(.*\))', text, maxsplit=1)
+    if len(text_list) == 3:
+        text = text_list[0] + text_list[2]
+        m = re.match('!\[(?P<alttext>.*?)\]\((?P<figname>.*?)\)', text_list[1])
+        fig = m.group('figname')
+        alttext = m.group('alttext')
+        text_list = re.split(',?\s*(width|height)\s*=\s*', alttext)
+        if len(text_list) == 1:
+            figwidth, figheight = text_list[0], ''
+        else:
+            figwidth = text_list[text_list.index('width') + 1]
+            if 'height' in text_list:
+                figheight = text_list[text_list.index('height') + 1]
+
+        widthval, widthunit = re.match('\s*(\d+(?:\.\d*)?)\s*(cm|mm|pt|in)', figwidth).groups()
+        widthval = float(widthval)
+        if widthunit == 'cm':  # convert unit to mm
+            widthval *= 10.0
+        elif widthunit == 'pt':
+            widthval *= 0.35146
+        elif widthunit == 'in':
+            widthval *= 25.4
+
+        figplace = 'center' if widthval > 60 else 'wrap'
+
+    return text, fig, figwidth, figheight, figplace
+
+
+def pe_md2tex_problem(text):
+
+    # search and process choice/blank place holder
+    text = re.sub('`\(_{4,}\)`', r'{\choice}', text)
+    text = re.sub('`_{4,}`', r'{\\blank}', text)
+
+    # search and process the candidates for choice-problem
+    if r'\choice' in text:
+        text_list = re.split('\n?(^A\. .*?\nB\. .*?\nC\. .*?\nD\. .*?$)\n?', text, flags=re.MULTILINE)
+        for i in range(1, len(text_list), 2):
+            _m = re.match('^A\. (.*?)\nB\. (.*?)\nC\. (.*?)\nD\. (.*?)$', text_list[i])
+            text_list[i] = r'\candidates{%s}{%s}{%s}{%s}' % _m.groups()
+        text = '\n'.join(text_list)
+
+    # search and process the figure (assume there is only one figure)
+    text, fig, figwidth, figheight, figplace = pe_md2tex_figproc(text)
+
+    # search and process enumerated itemize
+    text_list = []
+    _enum1 = _enum2 = False
+    for line in (text + '\n').split('\n'):
+        _m = re.match('\((?P<num>[0-9])+\)\s*(?P<itemtext>.*)', line.strip())
+        if _m:
+            if not _enum1:
+                _enum1 = True
+                text_list.append(r'\begin{enumerate}')
+                text_list.append(r'\setlength{\itemsep}{0pt}')
+                text_list.append(r'\renewcommand{\labelenumi}{(\theenumi)}')
+
+            text_list.append('\\item %s' % _m.group('itemtext'))
+            continue
+
+        _m = re.match('\((?P<num>[ivx])+\)\s*(?P<itemtext>.*)', line.strip())
+        if _m:
+            if not _enum2:
+                _enum2 = True
+                text_list.append(r'\begin{enumerate}')
+                text_list.append(r'\setlength{\itemsep}{0pt}')
+                text_list.append(r'\renewcommand{\theenumii}{\roman{enumii}}')
+                text_list.append(r'\renewcommand{\labelenumii}{(\theenumii)}')
+
+            text_list.append('\\item %s' % _m.group('itemtext'))
+            continue
+
+        if _enum2:
+            _enum2 = 0
+            text_list.append(r'\end{enumerate}')
+        if _enum1:
+            _enum1 = 0
+            text_list.append(r'\end{enumerate}')
+
+        text_list.append(line)
+
+    text = '\n'.join(text_list)
+
+    return text, fig, figwidth, figheight, figplace
+
+
+def pe_md2tex_solution(text):
+
+    text, fig, figwidth, figheight, figplace = pe_md2tex_figproc(text)
+
+    return text, fig, figwidth, figheight, figplace
 
 
 class ProblemEntry:
@@ -23,10 +186,12 @@ class ProblemEntry:
         self.shortanswer = shortanswer
 
         self.problem = ''
+        self.problemfig = ''
         self.topics = ''
         self.hint = ''
         self.answer = ''
         self.solution = ''
+        self.solutionfig = ''
         self.note = ''
         self.comment = ''
         self.info = ''
@@ -59,7 +224,10 @@ class ProblemEntry:
 
         _pre = _ans = _post = ''
 
-        _slices = re.split('((?:^>.*?\n)+)', text+'\n', flags=re.MULTILINE)
+        if text[-1] != '\n':
+            text = text + '\n'
+
+        _slices = re.split('((?:^>.*?\n)+)', text, flags=re.MULTILINE)
 
         if len(_slices) == 1:
             _pre = _slices[0]
@@ -105,18 +273,18 @@ class ProblemEntry:
             self.solution = _ans
 
         # process _post, to get note, comment, and info
-        _slices = re.split('^\s*`(.*)`\s*', _post)
+        _slices = re.split('^\s*`([^`]+)`\s*', _post, flags=re.MULTILINE)
 
         self.note = _slices[0].strip()
         for (h, s) in zip(_slices[1::2], _slices[2::2]):
-            if h in ['note', 'comment', 'info']:
+            if h in 'note comment info'.split():
                 self.__dict__[h] = self.__dict__[h] + '\n' + s
             else:
                 # TODO: reimplement this using Warnings
                 print('More contents (`%s`) found in the *note* section of file [%s]' % h, self.src)
 
         # process figures
-        for _k in ['problem', 'solution']:
+        for _k in 'problem solution note'.split():
             self.add_figure(self.__dict__[_k])
 
         return
@@ -126,7 +294,7 @@ class ProblemEntry:
             if k in 'src dest label tag'.split():
                 self.__setattr__(k, kw[k])
             else:
-                # TODO: reimplement this using Warnings
+                # TODO: reimplebment this using Warnings
                 print('Unknown property "%s"' % k)
         return
 
@@ -169,7 +337,7 @@ class ProblemEntry:
             dest = os.path.join(dest, self.label + '.md')
 
         with open(dest, 'w') as f:
-            f.write(fp.mdfile_formatter % self.__dict__)
+            f.write(pe_md_tmpl % self.__dict__)
         return
 
     def export_texfile(self, dest=''):
@@ -184,101 +352,23 @@ class ProblemEntry:
 
     def export_texdict(self):
         texdict = {}
-        for k in 'label tag problem topics hint answer solution note comment info'.split():
+        for k in 'label tag topics hint answer note comment info'.split():
             texdict[k] = self.__dict__[k]
 
-        for k in 'problem solution note comment info'.split():
-            _text = texdict[k]
+        texdict.update(zip(
+            'problem problemfig problemfigwidth problemfigheight problemfigplace'.split(),
+            pe_md2tex_problem(self.problem)
+        ))
 
-            #
-            # search and process tex source
-            #
-            _m = re.search('^```latex\s*(?P<texsrc>.*?)^```', _text, re.MULTILINE | re.DOTALL)
-            if _m:
-                texdict[k] = _m.group('texsrc')
-                continue
-
-            if k == 'problem':
-                #
-                # search and process choice/blank place holder and candidates in *problem* text
-                #
-                _text = re.sub('`\(_{4,}\)`', r'{\choice}', _text)
-                _text = re.sub('`_{4,}`', r'{\\blank}', _text)
-
-                _text_list = re.split('\n?(^A\. .*?\nB\. .*?\nC\. .*?\nD\. .*?$)\n?', _text, flags=re.MULTILINE)
-                if len(_text_list) > 2:
-                    _candidates = re.sub('!\[(?P<figlabel>.*?)\]\((?P<figname>.*?)\)',
-                                         '\MathclFigFile[\g<figlabel>]{\g<figname>}',
-                                         _text_list[1])
-
-                    _m = re.match('^A\. (.*?)\nB\. (.*?)\nC\. (.*?)\nD\. (.*?)$', _candidates)
-                    _text_list[1] = '\candidates{%s}{%s}{%s}{%s}' % _m.groups()
-                    _text = '\n'.join(_text_list)
-
-                #
-                # search and process enumerated itemize
-                #
-                _text_list = []
-                _enum1 = _enum2 = False
-                for line in (_text + '\n').split('\n'):
-                    _m = re.match('\((?P<num>[0-9])+\)\s*(?P<itemtext>.*)', line.strip())
-                    if _m:
-                        if not _enum1:
-                            _enum1 = True
-                            _text_list.append(r'\begin{enumerate}')
-                            _text_list.append(r'\setlength{\itemsep}{0pt}')
-                            _text_list.append(r'\renewcommand{\labelenumi}{(\theenumi)}')
-
-                        _text_list.append('\\item %s' % _m.group('itemtext'))
-                        continue
-
-                    _m = re.match('\((?P<num>[ivx])+\)\s*(?P<itemtext>.*)', line.strip())
-                    if _m:
-                        if not _enum2:
-                            _enum2 = True
-                            _text_list.append(r'\begin{enumerate}')
-                            _text_list.append(r'\setlength{\itemsep}{0pt}')
-                            _text_list.append(r'\renewcommand{\theenumii}{\roman{enumii}}')
-                            _text_list.append(r'\renewcommand{\labelenumii}{(\theenumii)}')
-
-                        _text_list.append('\\item %s' % _m.group('itemtext'))
-                        continue
-
-                    if _enum2:
-                        _enum2 = 0
-                        _text_list.append(r'\end{enumerate}')
-                    if _enum1:
-                        _enum1 = 0
-                        _text_list.append(r'\end{enumerate}')
-
-                    _text_list.append(line)
-
-                _text = '\n'.join(_text_list)
-
-            #
-            # search and process figure inclusion
-            #
-            _fig_list = []
-            _text_list = re.split('(!\[.*\]\(.*\))', _text)
-
-            _text = '\n'.join([s.strip() for s in _text_list[::2]])
-
-            for _t in _text_list[1::2]:
-                _m = re.match('!\[(?P<figlabel>.*?)\]\((?P<figname>.*?)\)', _t)
-                if _m.group('figname')[-5:] == '.tikz':
-                    _fig_list.append('\\MathclFigTikz[%s]{%s}' % _m)
-                else:
-                    _fig_list.append('\\MathclFigFile[%s]{%s}' % _m)
-
-            if _fig_list:
-                _text = '\\MathclFigPlace{%s}\n' % ''.join(_fig_list) + _text
-
-            texdict[k] = _text
+        texdict.update(zip(
+            'solution solutionfig solutionfigwidth solutionfigheight solutionfigplace'.split(),
+            pe_md2tex_solution(self.solution)
+        ))
 
         return texdict
 
     def export_texstr(self):
-        return fp.texfile_formatter % self.export_texdict()
+        return pe_tex_tmpl % self.export_texdict()
 
     def export_tuple(self):
         return (

@@ -33,6 +33,8 @@
 
 \RequirePackage{graphicx}
 
+\RequirePackage{wrapfig}
+
 \RequirePackage{color}
 
 \RequirePackage{bclogo}
@@ -89,11 +91,11 @@
 \geometry{
     bindingoffset = 1cm, % 装订线
     inner = 2cm,
-    outer = 6cm,
+    outer = 3cm,
     top = 3cm,
     bottom = 3cm,
-    marginparsep = 1cm,
-    marginparwidth = 4cm,
+    marginparsep = 5mm,
+    marginparwidth = 2cm,
 }
 
 % ---------------------------------------------------------
@@ -202,9 +204,17 @@
 % 所有文档类中通用的可能用到的各种宏
 % =====================================================================
 
-% 重新定义使用的“大于等于”和“小于等于”符号
+% 重新定义“大于等于”和“小于等于”符号
 \renewcommand\ge\geqslant
+\renewcommand\geq\geqslant
 \renewcommand\le\leqslant
+\renewcommand\leq\leqslant
+
+% 重新定义“平行于”符号
+\renewcommand\parallel{\mathrel{/\mkern-5mu/}}
+% pxfonts/txfonts 中有 \varparallel, fourier 中有 \parallelslant,
+% 但是这两个宏包都用不了 (详细原因待研究). 这里的解决方案来自于:
+% https://tex.stackexchange.com/questions/254574/typesetting-a-pair-of-slash-symbols-to-indicate-parallel-lines
 
 % ---------------------------------------------------------
 % 讲义信息
@@ -299,42 +309,90 @@
 % 题目信息
 % ---------------------------------------------------------
 
-\newcommand\@mathcl@repodir{/Users/cl/Documents/xyz/problems/}
-\newcommand{\MathclRepoDir}[1]{\renewcommand\@mathcl@repodir{#1}}
-
-\graphicspath{{\@mathcl@repodir}}
-
+% label
 \newcommand\@mathcl@label{}
+\newcommand{\MathclLabel}[1]{
+    \renewcommand\@mathcl@label{#1}
+}
+
+% tag
 \newcommand\@mathcl@tag{}
+\newcommand{\MathclTag}[1]{
+    \renewcommand\@mathcl@tag{#1}
+}
+
+% problem (with fig)
 \newcommand\@mathcl@problem{}
+\newcommand{\MathclProblem}[1]{
+    \renewcommand\@mathcl@problem{#1}
+}
+\newcommand\@mathcl@problem@fig{}
+\newcommand\@mathcl@problem@fig@width{}
+\newcommand\@mathcl@problem@fig@height{}
+\newcommand{\MathclProblemFig}[3]{
+    \renewcommand\@mathcl@problem@fig{#1}
+    \renewcommand\@mathcl@problem@fig@width{#2}
+    \renewcommand\@mathcl@problem@fig@height{#3}
+}
+\newcommand\@mathcl@problem@fig@place{}
+\newcommand{\MathclProblemFigPlace}[1]{
+    \renewcommand\@mathcl@problem@fig@place{#1}
+}
+
+% topics
 \newcommand\@mathcl@topics{}
+\newcommand{\MathclTopics}[1]{
+    \renewcommand\@mathcl@topics{#1}
+}
+
+% answer
 \newcommand\@mathcl@answer{}
+\newcommand{\MathclAnswer}[1]{
+    \renewcommand\@mathcl@answer{#1}
+}
+
+% hint
 \newcommand\@mathcl@hint{}
+\newcommand{\MathclHint}[1]{
+    \renewcommand\@mathcl@hint{#1}
+}
+
+% solution (with fig)
 \newcommand\@mathcl@solution{}
+\newcommand{\MathclSolution}[1]{
+    \renewcommand\@mathcl@solution{#1}
+}
+\newcommand\@mathcl@solution@fig{}
+\newcommand\@mathcl@solution@fig@width{}
+\newcommand\@mathcl@solution@fig@height{}
+\newcommand{\MathclSolutionFig}[3]{
+    \renewcommand\@mathcl@solution@fig{#1}
+    \renewcommand\@mathcl@solution@fig@width{#2}
+    \renewcommand\@mathcl@solution@fig@height{#3}
+}
+\newcommand\@mathcl@solution@fig@place{}
+\newcommand{\MathclSolutionFigPlace}[1]{
+    \renewcommand\@mathcl@solution@fig@place{#1}
+}
+
+% note
 \newcommand\@mathcl@note{}
+\newcommand{\MathclNote}[1]{
+    \renewcommand\@mathcl@note{#1}
+}
+
+% comment
 \newcommand\@mathcl@comment{}
+\newcommand{\MathclComment}[1]{
+    \renewcommand\@mathcl@comment{#1}
+}
+
+% info
 \newcommand\@mathcl@info{}
+\newcommand{\MathclInfo}[1]{
+    \renewcommand\@mathcl@info{#1}
+}
 
-\newcommand{\MathclLabel}[1]{    \renewcommand\@mathcl@label{#1}    }
-\newcommand{\MathclTag}[1]{      \renewcommand\@mathcl@tag{#1}      }
-\newcommand{\MathclProblem}[1]{  \renewcommand\@mathcl@problem{#1}  }
-\newcommand{\MathclTopics}[1]{   \renewcommand\@mathcl@topics{#1}   }
-\newcommand{\MathclAnswer}[1]{   \renewcommand\@mathcl@answer{#1}   }
-\newcommand{\MathclHint}[1]{     \renewcommand\@mathcl@hint{#1}     }
-\newcommand{\MathclSolution}[1]{ \renewcommand\@mathcl@solution{#1} }
-\newcommand{\MathclNote}[1]{     \renewcommand\@mathcl@note{#1}     }
-\newcommand{\MathclComment}[1]{  \renewcommand\@mathcl@comment{#1}  }
-\newcommand{\MathclInfo}[1]{     \renewcommand\@mathcl@info{#1}     }
-
-
-\newlength\@mathcl@fig@vshift
-\setlength{\@mathcl@fig@vshift}{0pt}
-
-\newcommand{\MathclFigVshift}[1]{\setlength{\@mathcl@fig@vshift}{#1}}
-\newcommand{\MathclFigVshiftReset}{\setlength{\@mathcl@fig@vshift}{0pt}}
-\newcommand{\MathclFigPlace}[1]{\marginnote{#1}[\@mathcl@fig@vshift]}
-\newcommand{\MathclFigFile}[2][]{\includegraphics[width=\marginparwidth]{#2}\label{fig:#1}}
-\newcommand{\MathclFigTikz}[2][]{\input{#2}\label{fig:#1}}
 
 
 
@@ -374,6 +432,37 @@
 % [cmd] \MathclExample
 % [cmd] \MathclUseAsExample
 % ---------------------------------------------------------
+
+\newcommand\@mathcltag@hint{\fangsong 【提示】}
+\newcommand{\MathclTagHint}[1]{
+    \renewcommand\@mathcltag@hint{#1}
+}
+
+\newcommand\@mathcltag@answer{\fangsong 【答案】}
+\newcommand{\MathclTagAnswer}[1]{
+    \renewcommand\@mathcltag@answer{#1}
+}
+
+\newcommand\@mathcltag@solution{\fangsong 【详解】}
+\newcommand{\MathclTagSolution}[1]{
+    \renewcommand\@mathcltag@solution{#1}
+}
+
+\newcommand\@mathcltag@note{\fangsong 【注记】}
+\newcommand{\MathclTagNote}[1]{
+    \renewcommand\@mathcltag@note{#1}
+}
+
+\newcommand\@mathcltag@comment{\fangsong 【评论】}
+\newcommand{\MathclTagComment}[1]{
+    \renewcommand\@mathcltag@comment{#1}
+}
+
+\newcommand\@mathcltag@info{\fangsong 【备注】}
+\newcommand{\MathclTagInfo}[1]{
+    \renewcommand\@mathcltag@info{#1}
+}
+
 
 \newenvironment{lecturenote}{
 %\begin{tcolorbox}
@@ -421,21 +510,63 @@
 \renewcommand{\@mathcl@exampletitle}{\@mathcl@tag \hfill {\texttt\@mathcl@label}}
 \fi
 \begin{examplebox}{\@mathcl@exampletitle}
-\@mathcl@problem % 题干
+% 题干
+\ifthenelse{
+    \equal{}{\@mathcl@problem@fig}
+}{% THEN part, if there is no fig
+    \@mathcl@problem
+}{% ELSE part, if there is a fig
+    \ifthenelse{
+        \equal{center}{\@mathcl@problem@fig@place}
+    }{% THEN part, if \@mathcl@problem@fig@place == center
+        \@mathcl@problem
+        \begin{center}
+        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
+        \end{center}
+    }{% ELSE part, if \@mathcl@problem@fig@place != center
+        \begin{wrapfigure}{r}{\@mathcl@problem@fig@width}
+        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
+        \end{wrapfigure}
+        \@mathcl@problem
+    }
+}
+%%%%%%%%%
 \tcblower
-\ifthenelse{\equal{}{\@mathcl@hint}    }{}{{\fangsong 【提示】}\@mathcl@hint  \\}
-\ifthenelse{\equal{}{\@mathcl@answer}  }{}{{\fangsong 【答案】}\@mathcl@answer\\}
-{\fangsong 【解析】}\@mathcl@solution
-\ifthenelse{\equal{}{\@mathcl@note}    }{}{\\{\fangsong 【注记】}\@mathcl@note   }
-\ifthenelse{\equal{}{\@mathcl@comment} }{}{\\{\fangsong 【评论】}\@mathcl@comment}
-\ifthenelse{\equal{}{\@mathcl@info}    }{}{\\{\fangsong 【信息】}\@mathcl@info   }
+%%%%%%%%%
+% 提示 
+\ifthenelse{\equal{}{\@mathcl@hint}   }{}{\@mathcltag@hint    \@mathcl@hint    \\}
+% 答案
+\ifthenelse{\equal{}{\@mathcl@answer} }{}{\@mathcltag@answer  \@mathcl@answer  \\}
+% 详解
+\ifthenelse{
+    \equal{}{\@mathcl@solution@fig}
+}{% THEN part, if there is no fig
+    \@mathcltag@solution \@mathcl@solution
+}{% ELSE part, if there is a fig
+    \ifthenelse{
+        \equal{center}{\@mathcl@solution@fig@place}
+    }{% THEN part, if \@mathcl@solution@fig@place == center
+        \@mathcltag@solution \@mathcl@solution
+        \begin{center}
+        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
+        \end{center}
+    }{% ELSE part, if \@mathcl@solution@fig@place != center
+        \begin{wrapfigure}{r}{\@mathcl@solution@fig@width}
+        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
+        \end{wrapfigure}
+        \@mathcltag@solution \@mathcl@solution
+    }
+}
+% 注记
+\ifthenelse{\equal{}{\@mathcl@note}   }{}{\\ \@mathcltag@note    \@mathcl@note   }
+% 评论
+\ifthenelse{\equal{}{\@mathcl@comment}}{}{\\ \@mathcltag@comment \@mathcl@comment}
+% 备注
+\ifthenelse{\equal{}{\@mathcl@info}   }{}{\\ \@mathcltag@info    \@mathcl@info   }
 \end{examplebox}
 
 
 % 清空相关信息
-
-\setlength{\@mathcl@fig@vshift}{0pt}
-
 \MathclLabel{}
 \MathclTag{}
 \MathclProblem{\bfseries\color{red} 当前没有题干！！！！！}
@@ -490,15 +621,53 @@
 \marginnote{\texttt\@mathcl@label}
 \fi
 \@mathcl@problem % 题干
-\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\\ {\fangsong 【提示】}\@mathcl@hint}
+\ifthenelse{
+    \equal{}{\@mathcl@problem@fig}
+}{% THEN part, if there is no fig
+    \@mathcl@problem
+}{% ELSE part, if there is a fig
+    \ifthenelse{
+        \equal{center}{\@mathcl@problem@fig@place}
+    }{% THEN part, if \@mathcl@problem@fig@place == center
+        \@mathcl@problem
+        \begin{center}
+        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
+        \end{center}
+    }{% ELSE part, if \@mathcl@problem@fig@place != center
+        \begin{wrapfigure}{r}{\@mathcl@problem@fig@width}
+        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
+        \end{wrapfigure}
+        \@mathcl@problem
+    }
+}
+% 提示
+\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\\ \@mathcltag@hint   \@mathcl@hint  }
 \tcblower
-\ifthenelse{\equal{}{\@mathcl@answer}  }{}{{\fangsong 【答案】}\@mathcl@answer \\}
-{\fangsong 【解析】}\@mathcl@solution
+% 答案
+\ifthenelse{\equal{}{\@mathcl@answer}  }{}{\@mathcltag@answer \@mathcl@answer \\}
+% 详解
+\ifthenelse{
+    \equal{}{\@mathcl@solution@fig}
+}{% THEN part, if there is no fig
+    \@mathcltag@solution \@mathcl@solution
+}{% ELSE part, if there is a fig
+    \ifthenelse{
+        \equal{center}{\@mathcl@solution@fig@place}
+    }{% THEN part, if \@mathcl@solution@fig@place == center
+        \@mathcltag@solution \@mathcl@solution
+        \begin{center}
+        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
+        \end{center}
+    }{% ELSE part, if \@mathcl@solution@fig@place != center
+        \begin{wrapfigure}{r}{\@mathcl@solution@fig@width}
+        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
+        \end{wrapfigure}
+        \@mathcltag@solution \@mathcl@solution
+    }
+}
 \end{exercisebox}
 
 % 清空相关信息
-\setlength{\@mathcl@fig@vshift}{0pt}
-
 \MathclLabel{}
 \MathclTag{}
 \MathclProblem{\bfseries\color{red} 当前没有题干！！！！！}
@@ -559,16 +728,54 @@
 \else
 \marginnote{\texttt\@mathcl@label}
 \fi
-\@mathcl@problem % 题干
-\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\\ {\fangsong 【提示】}\@mathcl@hint}
+% 题干
+\ifthenelse{
+    \equal{}{\@mathcl@problem@fig}
+}{% THEN part, if there is no fig
+    \@mathcl@problem
+}{% ELSE part, if there is a fig
+    \ifthenelse{
+        \equal{center}{\@mathcl@problem@fig@place}
+    }{% THEN part, if \@mathcl@problem@fig@place == center
+        \@mathcl@problem
+        \begin{center}
+        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
+        \end{center}
+    }{% ELSE part, if \@mathcl@problem@fig@place != center
+        \begin{wrapfigure}{r}{\@mathcl@problem@fig@width}
+        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
+        \end{wrapfigure}
+        \@mathcl@problem
+    }
+}
 \tcblower
-\ifthenelse{\equal{}{\@mathcl@answer}  }{}{{\fangsong 【答案】}\@mathcl@answer \\}
-{\fangsong 【解析】}\@mathcl@solution
+% 提示
+\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\@mathcltag@hint   \@mathcl@hint   \\}
+% 答案
+\ifthenelse{\equal{}{\@mathcl@answer}  }{}{\@mathcltag@answer \@mathcl@answer \\}
+% 详解
+\ifthenelse{
+    \equal{}{\@mathcl@solution@fig}
+}{% THEN part, if there is no fig
+    \@mathcltag@solution \@mathcl@solution
+}{% ELSE part, if there is a fig
+    \ifthenelse{
+        \equal{center}{\@mathcl@solution@fig@place}
+    }{% THEN part, if \@mathcl@solution@fig@place == center
+        \@mathcltag@solution \@mathcl@solution
+        \begin{center}
+        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
+        \end{center}
+    }{% ELSE part, if \@mathcl@solution@fig@place != center
+        \begin{wrapfigure}{r}{\@mathcl@solution@fig@width}
+        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
+        \end{wrapfigure}
+        \@mathcltag@solution \@mathcl@solution
+    }
+}
 \end{questionbox}
 
 % 清空相关信息
-\setlength{\@mathcl@fig@vshift}{0pt}
-
 \MathclLabel{}
 \MathclTag{}
 \MathclProblem{\bfseries\color{red} 当前没有题干！！！！！}
