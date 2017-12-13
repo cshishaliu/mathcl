@@ -450,7 +450,7 @@
 \newcommand{\MathclInfo}[1]{\renewcommand\@lnpro@info{#1}}
 \newcommand\@lnpro@info@prefix{\fangsong 【备注】}
 
-% clear
+% clear all problem information
 \newcommand\@lnpro@clear{
 \renewcommand\@lnpro@label{}
 \renewcommand\@lnpro@tag{}
@@ -530,14 +530,16 @@
 }
 
 
-\newcommand{\@lnpro@example@title}{}
+\newcommand{\@lnpro@box@title}{}
+
 \newcommand{\MathclExample}{
 \if@teacher@ % 教师版要显示题目编号 (problem label)
-\renewcommand{\@lnpro@example@title}{\@lnpro@tag \hfill \fbox{\texttt\@lnpro@label}}
+\renewcommand{\@lnpro@box@title}{\@lnpro@tag \hfill \fbox{\texttt\@lnpro@label}}
 \else
-\renewcommand{\@lnpro@example@title}{\@lnpro@tag}
+\renewcommand{\@lnpro@box@title}{\@lnpro@tag}
 \fi
-\begin{examplebox}{\@lnpro@example@title}
+
+\begin{examplebox}{\@lnpro@box@title}
 % 题干
 \ifthenelse{\equal{}{\@lnpro@problem}}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem}
 
@@ -595,7 +597,9 @@
     colframe = white,
     opacityback = 0,
     lower separated = false,
-    before upper = {\thetcbcounter.~\ifthenelse{\equal{}{#2}}{}{(#2)~}},
+    fonttitle = \normalfont,
+    title = {习题 \thetcbcounter.~\ifthenelse{\equal{}{#2}}{}{#2}},
+    %before upper = ,
     #1,
     %before lower = \@answertag\\,
     lowerbox = \@lnpro@ans@visibility,
@@ -604,58 +608,32 @@
 }
 
 \newcommand{\MathclExercise}{
-\begin{exercisebox}{\@mathcl@tag}
-\if@teacher % 教师版要显示题目编号 (problem label)
-\marginnote{\texttt\@mathcl@label}
+\if@teacher@ % 教师版要显示题目编号 (problem label)
+\renewcommand{\@lnpro@box@title}{\@lnpro@tag \hfill \fbox{\texttt\@lnpro@label}}
+\else
+\renewcommand{\@lnpro@box@title}{\@lnpro@tag}
 \fi
+
+\begin{exercisebox}{\@lnpro@box@title}
 % 题干
-\@mathcl@problem
+\ifthenelse{\equal{}{\@lnpro@problem}}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem}
+
 % 提示
 \ifthenelse{\equal{}{\@mathcl@hint}    }{}{\@mathcltag@hint   \@mathcl@hint  }
-\ifthenelse{
-    \equal{}{\@mathcl@problem@fig}
-}{% THEN part, if there is no fig
-}{% ELSE part, if there is a fig
-    \begin{flushright}
-    \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
-    \end{flushright}
-}
-\tcblower
+
+%%%%%%%%%%
+\tcblower%
+%%%%%%%%%%
+
 % 答案
-\ifthenelse{\equal{}{\@mathcl@answer}  }{}{\@mathcltag@answer \@mathcl@answer \\}
+\ifthenelse{\equal{}{\@mathcl@answer}  }{}{\@mathcltag@answer \@mathcl@answer }
+
 % 详解
-\ifthenelse{
-    \equal{}{\@mathcl@solution@fig}
-}{% THEN part, if there is no fig
-    \@mathcltag@solution \@mathcl@solution
-}{% ELSE part, if there is a fig
-    \ifthenelse{
-        \equal{center}{\@mathcl@solution@fig@place}
-    }{% THEN part, if \@mathcl@solution@fig@place == center
-        \@mathcltag@solution \@mathcl@solution
-        \begin{center}
-        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
-        \end{center}
-    }{% ELSE part, if \@mathcl@solution@fig@place != center
-        \begin{wrapfigure}{r}{\@mathcl@solution@fig@width}
-        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
-        \end{wrapfigure}
-        \@mathcltag@solution \@mathcl@solution
-    }
-}
+\@mathcltag@solution \@mathcl@solution
 \end{exercisebox}
 
 % 清空相关信息
-\MathclLabel{}
-\MathclTag{}
-\MathclProblem{\bfseries\color{red} 当前没有题干！！！！！}
-\MathclTopics{}
-\MathclAnswer{}
-\MathclHint{}
-\MathclSolution{}
-\MathclNote{}
-\MathclComment{}
-\MathclInfo{}
+\@lnpro@clear
 }
 
 \newcommand{\MathclUseAsExercise}[1]{\import{\@mathcl@repodir}{#1} \MathclExercise}
