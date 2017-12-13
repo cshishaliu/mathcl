@@ -55,7 +55,7 @@
         \pgf@pt@x=0pt%
         \pgf@pt@y=0pt%
         \special{pdf: content q}%
-        \pgflowlevelsynccm% 
+        \pgflowlevelsynccm%
         \pgfsys@invoke{q -1 0 0 -1 0 0 cm}%
         \special{pdf: content -1 0 0 -1 0 0 cm q}% translate to original coordinate system
         \pgfsys@invoke{0 J [] 0 d}% reset line cap and dash
@@ -347,7 +347,7 @@
 \candidate@mark{D}\makebox[\linewidth@half+\candidate@postmargin][l]{#4}%
     }{%
 \candidate@mark{A}\makebox[\linewidth@quat+\candidate@postmargin][l]{#1}%
-\candidate@mark{B}\makebox[\linewidth@quat+\candidate@postmargin][l]{#2}\\
+\candidate@mark{B}\makebox[\linewidth@quat+\candidate@postmargin][l]{#2}%
 \candidate@mark{C}\makebox[\linewidth@quat+\candidate@postmargin][l]{#3}%
 \candidate@mark{D}\makebox[\linewidth@quat+\candidate@postmargin][l]{#4}%
     }%
@@ -543,7 +543,7 @@
 % 题干
 \ifthenelse{\equal{}{\@lnpro@problem}}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem}
 
-% 提示 
+% 提示
 \ifthenelse{\equal{}{\@lnpro@hint}   }{}{\@lnpro@hint@prefix    \@lnpro@hint   }
 
 %%%%%%%%%%
@@ -570,7 +570,7 @@
 \@lnpro@clear
 }
 
-\newcommand{\MathclUseAsExample}[1]{ % TODO: reimplement this!!!
+\newcommand{\MathclUseAsExample}[1]{% TODO: reimplement this!!!
 \import{\@mathcl@repodir}{#1} \MathclExample}
 
 
@@ -619,24 +619,25 @@
 \ifthenelse{\equal{}{\@lnpro@problem}}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem}
 
 % 提示
-\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\@mathcltag@hint   \@mathcl@hint  }
+\ifthenelse{\equal{}{\@lnpro@hint}   }{}{\@lnpro@hint@prefix   \@lnpro@hint  }
 
 %%%%%%%%%%
 \tcblower%
 %%%%%%%%%%
 
 % 答案
-\ifthenelse{\equal{}{\@mathcl@answer}  }{}{\@mathcltag@answer \@mathcl@answer }
+\ifthenelse{\equal{}{\@lnpro@answer} }{}{\@lnpro@answer@prefix \@lnpro@answer}
 
 % 详解
-\@mathcltag@solution \@mathcl@solution
+\@lnpro@solution@prefix \@lnpro@solution
 \end{exercisebox}
 
 % 清空相关信息
 \@lnpro@clear
 }
 
-\newcommand{\MathclUseAsExercise}[1]{\import{\@mathcl@repodir}{#1} \MathclExercise}
+\newcommand{\MathclUseAsExercise}[1]{% TODO: reimplement this!
+\import{\@mathcl@repodir}{#1} \MathclExercise}
 
 
 
@@ -652,7 +653,7 @@
 \newenvironment{classtest}{%
 \clearpage%
 \begin{tcolorbox}
-\if@teacher
+\if@teacher@
 测试
 \else
 本节笔记
@@ -667,7 +668,9 @@
     enhanced jigsaw,
     colframe = white,
     opacityback = 0,
-    before upper = {\thetcbcounter.~({#2}~分\ifthenelse{\equal{}{#3}}{}{,~#3})},
+    fonttitle = \normalfont,
+    title = {\thetcbcounter.~({#2}~分)~\ifthenelse{\equal{}{#3}}{}{#3}},
+    %before upper = ,
     #1,
     upperbox = \@lnpro@ans@visibility,
     lower separated=false,
@@ -678,61 +681,37 @@
 
 
 \newcommand{\MathclQuestion}[1]{
-\begin{questionbox}{#1}{\@mathcl@tag}
-\if@teacher % 教师版要显示题目编号 (problem label)
-\marginnote{\texttt\@mathcl@label}
+\if@teacher@ % 教师版要显示题目编号 (problem label)
+\renewcommand{\@lnpro@box@title}{\@lnpro@tag \hfill \fbox{\texttt\@lnpro@label}}
+\else
+\renewcommand{\@lnpro@box@title}{\@lnpro@tag}
 \fi
+
+
+\begin{questionbox}{#1}{\@lnpro@box@title}
 % 题干
-\@mathcl@problem
-\ifthenelse{
-    \equal{}{\@mathcl@problem@fig}
-}{% THEN part, if there is no fig
-}{% ELSE part, if there is a fig
-    \begin{flushright}
-    \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
-    \end{flushright}
-}
-\tcblower
+\ifthenelse{\equal{}{\@lnpro@problem}}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem}
+
 % 提示
-\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\@mathcltag@hint   \@mathcl@hint   \\}
+\ifthenelse{\equal{}{\@lnpro@hint}   }{}{\@lnpro@hint@prefix   \@lnpro@hint  }
+
+%%%%%%%%%%
+\tcblower%
+%%%%%%%%%%
+
 % 答案
-\ifthenelse{\equal{}{\@mathcl@answer}  }{}{\@mathcltag@answer \@mathcl@answer \\}
+\ifthenelse{\equal{}{\@lnpro@answer} }{}{\@lnpro@answer@prefix \@lnpro@answer}
+
 % 详解
-\ifthenelse{
-    \equal{}{\@mathcl@solution@fig}
-}{% THEN part, if there is no fig
-    \@mathcltag@solution \@mathcl@solution
-}{% ELSE part, if there is a fig
-    \ifthenelse{
-        \equal{center}{\@mathcl@solution@fig@place}
-    }{% THEN part, if \@mathcl@solution@fig@place == center
-        \@mathcltag@solution \@mathcl@solution
-        \begin{center}
-        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
-        \end{center}
-    }{% ELSE part, if \@mathcl@solution@fig@place != center
-        \begin{wrapfigure}{r}{\@mathcl@solution@fig@width}
-        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
-        \end{wrapfigure}
-        \@mathcltag@solution \@mathcl@solution
-    }
-}
+\@lnpro@solution@prefix \@lnpro@solution
 \end{questionbox}
 
 % 清空相关信息
-\MathclLabel{}
-\MathclTag{}
-\MathclProblem{\bfseries\color{red} 当前没有题干！！！！！}
-\MathclTopics{}
-\MathclAnswer{}
-\MathclHint{}
-\MathclSolution{}
-\MathclNote{}
-\MathclComment{}
-\MathclInfo{}
+\@lnpro@clear
 }
 
-\newcommand{\MathclUseAsQuestion}[2]{\import{\@mathcl@repodir}{#2} \MathclQuestion{#1}}
+\newcommand{\MathclUseAsQuestion}[2]{% TODO: reimplement this!
+\import{\@mathcl@repodir}{#2} \MathclQuestion{#1}}
 
 % ---------------------------------------------------------
 % 考试讲次的环境和命令
@@ -746,4 +725,3 @@
 % ---------------------------------------------------------
 
 \newenvironment{examination}{}{}
-
