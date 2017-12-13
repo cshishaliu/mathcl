@@ -6,37 +6,27 @@
 %
 \NeedsTeXFormat{LaTeX2e}
 
-\ProvidesClass{mathcllecnote}[2017/08/15]
+\ProvidesClass{mlecnote}[2017/12/03]
 
 \LoadClass{ctexbook}
 
 \RequirePackage{geometry}
-
 \RequirePackage{fancyhdr}
-
 \RequirePackage{hyperref}
-
 \RequirePackage{setspace}
-%\singlespacing
-%\onehalfspacing
-%\doublespacing
-
 \RequirePackage{needspace}
 
 \RequirePackage{import}
-
 \RequirePackage{versions}
-
-\RequirePackage{verbatim}
-
+%\RequirePackage{verbatim}
 \RequirePackage{xifthen}
+\RequirePackage{keycommand}
 
 \RequirePackage{amsmath,amssymb}
 \RequirePackage{mathabx}
 \RequirePackage{bm}
 
 \RequirePackage{graphicx}
-
 \RequirePackage{wrapfig}
 
 \RequirePackage{color}
@@ -86,6 +76,59 @@
 }
 
 % =====================================================================
+% 处理文档选项
+% =====================================================================
+\newif\if@teacher@    \@teacher@true
+\newif\if@lecnote@    \@lecnote@true
+\newif\if@homework@   \@homework@false
+\newif\if@classtest@  \@classtest@false
+\newif\if@answerbook@ \@answerbook@false
+
+\DeclareOption{teacher}{% This is the DEFAULT option.
+%\@teacher@true
+%\@lecnote@true
+%\@homework@false
+%\@classtest@false
+%\@answerbook@false
+}
+
+\DeclareOption{student}{
+\@teacher@false
+%\@lecnote@true
+%\@homework@false
+%\@classtest@false
+%\@answerbook@false
+}
+
+\DeclareOption{homework}{
+\@teacher@false
+\@lecnote@false
+\@homework@true
+%\@classtest@false
+%\@answerbook@false
+}
+
+\DeclareOption{classtest}{
+\@teacher@false
+\@lecnote@false
+%\@homework@false
+\@classtest@true
+%\@answerbook@false
+}
+
+\DeclareOption{answerbook}{
+%\@teacher@true
+\@lecnote@false
+%\@homework@false
+%\@classtest@false
+\@answerbook@true
+}
+
+\ProcessOptions
+
+
+
+% =====================================================================
 % 页面设置
 % =====================================================================
 
@@ -98,13 +141,55 @@
     outer = 3cm,
     top = 3cm,
     bottom = 3cm,
-    marginparsep = 2mm,
+    marginparsep = 0.3cm,
     marginparwidth = 2cm,
 }
 
 % ---------------------------------------------------------
-% 页眉和页脚
+% 页眉和页脚 TODO: 待完善
 % ---------------------------------------------------------
+\newcommand\@lhead@odd{}
+\newcommand\@rhead@odd{}
+\newcommand\@lfoot@odd{}
+\newcommand\@rfoot@odd{}
+\newcommand\@lhead@even{}
+\newcommand\@rhead@even{}
+\newcommand\@lfoot@even{}
+\newcommand\@rfoot@even{}
+
+\fancypagestyle{lecnote}{%
+\fancyhf{}
+\renewcommand\headrulewidth{0pt}
+\renewcommand\footrulewidth{0pt}
+\pagenumbering{arabic}
+\fancyhead[LE]{%
+    \begin{tikzpicture}[remember picture,overlay]
+    \fill[blue!20] (current page.north west) -- (current page.north east) -- ++ (0, -2) -| cycle;
+    \fill[blue!20] (current page.south west) -- (current page.south east) -- ++ (0, 2) -| cycle;
+    \draw[anchor=base] (current page.north west) ++ (2,-1.5)
+    node(pageno) {\bfseries\thepage};
+    \draw[anchor=base west] (pageno.base east)
+    node (chapmark) {\bfseries 高思数学/竞赛体系/\@lninfo@grade\@lninfo@subject\@lninfo@class/\@lninfo@year\@lninfo@term};
+    \end{tikzpicture}
+}
+\fancyhead[RO]{%
+    \begin{tikzpicture}[remember picture,overlay]
+    \fill[blue!20] (current page.north west) -- (current page.north east) -- ++ (0, -2) -| cycle;
+    \fill[blue!20] (current page.south west) -- (current page.south east) -- ++ (0, 2) -| cycle;
+    \draw[anchor=base] (current page.north east) ++ (-2,-1.5) node
+    (pageno) {\bfseries\thepage};
+    \draw[anchor=base east] (pageno.base west)
+    node (chapmark) {\bfseries\leftmark};
+    \end{tikzpicture}
+}
+}
+
+\fancypagestyle{homework}{}
+
+\fancypagestyle{classtest}{}
+
+\fancypagestyle{answerbook}{}
+
 \renewcommand\frontmatter{%
     \cleardoublepage
     \@mainmatterfalse
@@ -113,30 +198,7 @@
 \renewcommand\mainmatter{%
     \cleardoublepage
     \@mainmattertrue
-    \pagenumbering{arabic}
-    \fancyhf{}
-    \renewcommand\headrulewidth{0pt}
-    \fancyhead[LE]{%
-        \begin{tikzpicture}[remember picture,overlay]
-        \fill[blue!20] (current page.north west) -- (current page.north east) -- ++ (0, -2) -| cycle;
-        \fill[blue!20] (current page.south west) -- (current page.south east) -- ++ (0, 2) -| cycle;
-        \draw[anchor=base] (current page.north west) ++ (2,-1.5)
-        node(pageno) {\bfseries\thepage};
-        \draw[anchor=base west] (pageno.base east)
-        node (chapmark) {\bfseries 高思数学/竞赛体系/\@mathcl@grade\@mathcl@subject\@mathcl@class/\@mathcl@year\@mathcl@term};
-        \end{tikzpicture}
-    }
-    \fancyhead[RO]{%
-        \begin{tikzpicture}[remember picture,overlay]
-        \fill[blue!20] (current page.north west) -- (current page.north east) -- ++ (0, -2) -| cycle;
-        \fill[blue!20] (current page.south west) -- (current page.south east) -- ++ (0, 2) -| cycle;
-        \draw[anchor=base] (current page.north east) ++ (-2,-1.5) node
-        (pageno) {\bfseries\thepage};
-        \draw[anchor=base east] (pageno.base west)
-        node (chapmark) {\bfseries\leftmark};
-        \end{tikzpicture}
-    }
-    \pagestyle{fancy}
+    \pagestyle{lecnote}
 }
 
 % ---------------------------------------------------------
@@ -157,7 +219,6 @@
 % ---------------------------------------------------------
 \ctexset{
     chapter={
-        pagestyle = fancy,
         name = {第,讲},
         number = \arabic{chapter},
     },
@@ -165,18 +226,12 @@
 
 \ctexset{
     chapter={
-        pagestyle = fancy,
-        name = {第,讲},
+        %pagestyle = lecnote,
         nameformat = \chapternameformat,
-        number = \arabic{chapter},
         aftername = {},
         titleformat = \chaptertitleformat,
         aftertitle = {},
     },
-    subsection={
-        format = \raggedright\normalsize\kaishu,
-        %titleformat = \subsectitleformat,
-    }
 }
 \newcommand\chapternameformat[1]{
     \rightline{%
@@ -185,7 +240,7 @@
         colframe = blue!50,
         coltext = blue!60,
         colback = white,
-        squeezed title= \@mathcl@year~\@mathcl@term/\@mathcl@grade,
+        squeezed title= \@lninfo@year~\@lninfo@term/\@lninfo@grade,
         fonttitle = \normalsize\fangsong,
         fontupper = \Large\kaishu,
         ]{#1}
@@ -208,7 +263,7 @@
 % 所有文档类中通用的可能用到的各种宏
 % =====================================================================
 
-% 大于等于 和 小于等于
+% 大于等于 (“≥”) 和 小于等于 (“≤”)
 \renewcommand\ge\geqslant
 \renewcommand\geq\geqslant
 \renewcommand\le\leqslant
@@ -226,90 +281,123 @@
 % ---------------------------------------------------------
 % 讲义信息
 % ---------------------------------------------------------
-\newcommand\@mathcl@grade{高一}   % 年级
-\newcommand\@mathcl@subject{数学} % 科目
-\newcommand\@mathcl@class{联赛班} % 班型
-\newcommand\@mathcl@year{2017}    % 年份
-\newcommand\@mathcl@term{暑假}    % 学期 (暑秋寒春)
+\newcommand\@lninfo@grade{高一}   % 年级
+\newcommand\@lninfo@subject{数学} % 科目
+\newcommand\@lninfo@class{联赛班} % 班型
+\newcommand\@lninfo@year{2017}    % 年份
+\newcommand\@lninfo@term{暑假}    % 学期 (暑秋寒春)
 
-\newcommand\setgrade[1]{\renewcommand\@mathcl@grade{#1}}
-\newcommand\setsubject[1]{\renewcommand\@mathcl@subject{#1}}
-\newcommand\setclass[1]{\renewcommand\@mathcl@class{#1}}
-\newcommand\setyear[1]{\renewcommand\@mathcl@year{#1}}
-\newcommand\setterm[1]{\renewcommand\@mathcl@term{#1}}
-\newcommand\setinfo[5]{
-    \renewcommand\@mathcl@grade{#1}
-    \renewcommand\@mathcl@subject{#2}
-    \renewcommand\@mathcl@class{#3}
-    \renewcommand\@mathcl@year{#4}
-    \renewcommand\@mathcl@term{#5}
+\newcommand\setgrade[1]{\renewcommand\@lninfo@grade{#1}}
+\newcommand\setsubject[1]{\renewcommand\@lninfo@subject{#1}}
+\newcommand\setclass[1]{\renewcommand\@lninfo@class{#1}}
+\newcommand\setyear[1]{\renewcommand\@lninfo@year{#1}}
+\newcommand\setterm[1]{\renewcommand\@lninfo@term{#1}}
+\newcommand\setlecnoteinfo[5]{
+    \renewcommand\@lninfo@grade{#1}
+    \renewcommand\@lninfo@subject{#2}
+    \renewcommand\@lninfo@class{#3}
+    \renewcommand\@lninfo@year{#4}
+    \renewcommand\@lninfo@term{#5}
 }
 
 % ---------------------------------------------------------
 % 选择题的选项
 % ---------------------------------------------------------
-\newlength{\wid@cur}
-\newlength{\wid@max}
+\newlength{\cur@candidate@width}
+\newlength{\max@candidate@width}
 
-\newlength{\wid@half}
-\newlength{\wid@quat}
+\newlength{\linewidth@quat}
+\newlength{\linewidth@half}
 
-\newlength{\wid@chmark}\setlength{\wid@chmark}{2em}
+\newlength{\candidate@mark@width}
+\setlength{\candidate@mark@width}{2em}
 
-\newcommand\ch@mark[1]{\makebox[\wid@chmark][l]{#1.~}}
+\newlength{\candidate@postmargin}
+\setlength{\candidate@postmargin}{2em}
 
-\newlength{\wid@chtext}\setlength{\wid@chtext}{\wid@half}
+\newcommand\candidate@mark[1]{\makebox[\candidate@mark@width][l]{#1.}}
 
-\newcommand\ch@text[2]{\makebox[\wid@chtext][l]{\ch@mark{#1}#2}}
+% cmd: \candidates
+\newcommand\candidates[4]{%
+\setlength{\wid@half}{0.50*(\linewidth-\parindent)-\candidate@mark@width-\candidate@postmargin}%
+\setlength{\wid@quat}{0.25*(\linewidth-\parindent)-\candidate@mark@width-\candidate@postmargin}%
+%
+\settowidth{\max@candidate@width}{#1}%
+\settowidth{\cur@candidate@width}{#2}%
+\ifthenelse{\lengthtest{\max@candidate@width < \cur@candidate@width}}{\setlength{\max@candidate@width}{\cur@candidate@width}}{}%
+\settowidth{\cur@candidate@width}{#3}%
+\ifthenelse{\lengthtest{\max@candidate@width < \cur@candidate@width}}{\setlength{\max@candidate@width}{\cur@candidate@width}}{}%
+\settowidth{\cur@candidate@width}{#4}%
+\ifthenelse{\lengthtest{\max@candidate@width < \cur@candidate@width}}{\setlength{\max@candidate@width}{\cur@candidate@width}}{}%
+%
 
-\newlength{\wid@chmargin}\setlength{\wid@chmargin}{1em}
-
-\newcommand\candidates[4]{
-\setlength{\wid@half}{0.5\textwidth}
-\setlength{\wid@quat}{0.25\textwidth}
-
-\settowidth{\wid@max}{#1}
-\settowidth{\wid@cur}{#2}
-\ifthenelse{\lengthtest{\wid@max < \wid@cur}}{\setlength{\wid@max}{\wid@cur}}{}
-\settowidth{\wid@cur}{#3}
-\ifthenelse{\lengthtest{\wid@max < \wid@cur}}{\setlength{\wid@max}{\wid@cur}}{}
-\settowidth{\wid@cur}{#4}
-\ifthenelse{\lengthtest{\wid@max < \wid@cur}}{\setlength{\wid@max}{\wid@cur}}{}
-
-\addtolength{\wid@max}{\wid@chmark}
-\addtolength{\wid@max}{\wid@chmargin}
-
-\begin{flushleft}
-\ifthenelse{\lengthtest{\wid@max > \wid@half}}{
-\hangafter 1
-\hangindent\wid@chmark
-\ch@mark{A}#1\\
-\ch@mark{B}#2\\
-\ch@mark{C}#3\\
-\ch@mark{D}#4
-}{
-\ifthenelse{ \lengthtest{\wid@max < \wid@quat}
-}{ \setlength{\wid@chtext}{\wid@quat}
-}{ \setlength{\wid@chtext}{\wid@half}
-}
-\addtolength{\wid@chtext}{-\wid@chmargin}
-\ch@text{A}{#1}
-\ch@text{B}{#2}
-\ch@text{C}{#3}
-\ch@text{D}{#4}
-}
-\end{flushleft}
-
+\ifthenelse{ \lengthtest{\max@candidate@width > \linewidthhalf} }{%
+\hsapce{\candidate@mark@width}%
+\begin{minipage}[t]{\linewidth-\parindent-\candidate@postmargin}%
+\makebox[0pt][r]{\candidate@mark{A}}#1\\
+\makebox[0pt][r]{\candidate@mark{B}}#2\\
+\makebox[0pt][r]{\candidate@mark{C}}#3\\
+\makebox[0pt][r]{\candidate@mark{D}}#4%
+\end{minipage}%
+}{%
+    \ifthenelse{ \lengthtest{\max@candidate@width > \linewidth@quat} }{%
+\candidate@mark{A}\makebox[\linewidth@half+\candidate@postmargin][l]{#1}%
+\candidate@mark{B}\makebox[\linewidth@half+\candidate@postmargin][l]{#2}\\
+\candidate@mark{C}\makebox[\linewidth@half+\candidate@postmargin][l]{#3}%
+\candidate@mark{D}\makebox[\linewidth@half+\candidate@postmargin][l]{#4}%
+    }{%
+\candidate@mark{A}\makebox[\linewidth@quat+\candidate@postmargin][l]{#1}%
+\candidate@mark{B}\makebox[\linewidth@quat+\candidate@postmargin][l]{#2}\\
+\candidate@mark{C}\makebox[\linewidth@quat+\candidate@postmargin][l]{#3}%
+\candidate@mark{D}\makebox[\linewidth@quat+\candidate@postmargin][l]{#4}%
+    }%
+}%
+%
 }
 
+% ---------------------------------------------------------
 % 选择题的空
-\newcommand\choice{(~~~~)}
+% ---------------------------------------------------------
+\newlength{\choicewidth}
+\setlength{\choicewidth}{1.5cm}
+% cmd: \choice
+\newcommand\choice{\makebox[\choicewidth][s]{(\hfill)}}
 
+% ---------------------------------------------------------
 % 填空题的空
-\newcommand\blank{\underline{\hspace{2cm}}}
+% ---------------------------------------------------------
+\newlength{\blankwidth}
+\setlength{\blankwidth}{2cm}
+% cmd: \blank
+\newcommand\blank{\underline{\hspace{\blankwidth}}}
 
-% 图形的占位符
-\newcommand\figurehere{{\color{red}\bfseries FIGURE HERE!}}
+
+% ---------------------------------------------------------
+% 图片插入命令
+% ---------------------------------------------------------
+\newcommand\ln@put@figure
+\newlength\ln@figure@width
+% cmd: \lnfigure
+\newkeycommand\lnfigure[enum place={wrapright,wrapleft,right,center,left,inline}][OtherKeys][2]{%
+\renewcommand\ln@put@figure{\ifthenelse{\equal{#1}{}}{}{\graphicspath{{#1}}}\includegraphics[OtherKeys]{#2}}%
+\settowidth\ln@figure@width{\ln@put@figure}%
+\ifthenelse{\equal{\commandkey}{wrapright}}{\begin{wrapfigure}{r}{\ln@figure@width}\ln@put@figure\end{wrapfigure}}{}%
+\ifthenelse{\equal{\commandkey}{wrapleft} }{\begin{wrapfigure}{l}{\ln@figure@width}\ln@put@figure\end{wrapfigure}}{}%
+\ifthenelse{\equal{\commandkey}{right}    }{\begin{flushright}\ln@put@figure\end{flushright}}{}%
+\ifthenelse{\equal{\commandkey}{center}   }{\begin{center}\ln@put@figure\end{center}}{}%
+\ifthenelse{\equal{\commandkey}{left}     }{\begin{flushleft}\ln@put@figure\end{flushleft}}{}%
+\ifthenelse{\equal{\commandkey}{inline}   }{\ln@put@figure}{}%
+}
+
+% ---------------------------------------------------------
+% 图片的占位符
+% ---------------------------------------------------------
+% cmd: \figurehere
+\newcommand\figurehere{%
+\begin{center}%
+\fbox{\color{red}\Huge \bfseries FIGURE HERE!}%
+\end{center}%
+}
 
 
 % ---------------------------------------------------------
@@ -317,113 +405,71 @@
 % ---------------------------------------------------------
 
 % label
-\newcommand\@mathcl@label{}
-\newcommand{\MathclLabel}[1]{
-    \renewcommand\@mathcl@label{#1}
-}
+\newcommand\@lnpro@label{}
+\newcommand{\MathclLabel}[1]{\renewcommand\@lnpro@label{#1}}
 
 % tag
-\newcommand\@mathcl@tag{}
-\newcommand{\MathclTag}[1]{
-    \renewcommand\@mathcl@tag{#1}
-}
+\newcommand\@lnpro@tag{}
+\newcommand{\MathclTag}[1]{\renewcommand\@lnpro@tag{#1}}
 
-% problem (with fig)
-\newcommand\@mathcl@problem{}
-\newcommand{\MathclProblem}[1]{
-    \renewcommand\@mathcl@problem{#1}
-}
-\newcommand\@mathcl@problem@fig{}
-\newcommand\@mathcl@problem@fig@width{}
-\newcommand\@mathcl@problem@fig@height{}
-\newcommand{\MathclProblemFig}[3]{
-    \renewcommand\@mathcl@problem@fig{#1}
-    \renewcommand\@mathcl@problem@fig@width{#2}
-    \renewcommand\@mathcl@problem@fig@height{#3}
-}
-\newcommand\@mathcl@problem@fig@place{}
-\newcommand{\MathclProblemFigPlace}[1]{
-    \renewcommand\@mathcl@problem@fig@place{#1}
-}
+% problem
+\newcommand\@lnpro@problem{}
+\newcommand{\MathclProblem}[1]{\renewcommand\@lnpro@problem{#1}}
 
 % topics
-\newcommand\@mathcl@topics{}
-\newcommand{\MathclTopics}[1]{
-    \renewcommand\@mathcl@topics{#1}
-}
+\newcommand\@lnpro@topics{}
+\newcommand{\MathclTopics}[1]{\renewcommand\@lnpro@topics{#1}}
 
 % answer
-\newcommand\@mathcl@answer{}
-\newcommand{\MathclAnswer}[1]{
-    \renewcommand\@mathcl@answer{#1}
-}
+\newcommand\@lnpro@answer{}
+\newcommand{\MathclAnswer}[1]{\renewcommand\@lnpro@answer{#1}}
+\newcommand\@lnpro@answer@prefix{\fangsong 【答案】}
 
 % hint
-\newcommand\@mathcl@hint{}
-\newcommand{\MathclHint}[1]{
-    \renewcommand\@mathcl@hint{#1}
-}
+\newcommand\@lnpro@hint{}
+\newcommand{\MathclHint}[1]{\renewcommand\@lnpro@hint{#1}}
+\newcommand\@lnpro@hint@prefix{\fangsong 【提示】}
 
-% solution (with fig)
-\newcommand\@mathcl@solution{}
-\newcommand{\MathclSolution}[1]{
-    \renewcommand\@mathcl@solution{#1}
-}
-\newcommand\@mathcl@solution@fig{}
-\newcommand\@mathcl@solution@fig@width{}
-\newcommand\@mathcl@solution@fig@height{}
-\newcommand{\MathclSolutionFig}[3]{
-    \renewcommand\@mathcl@solution@fig{#1}
-    \renewcommand\@mathcl@solution@fig@width{#2}
-    \renewcommand\@mathcl@solution@fig@height{#3}
-}
-\newcommand\@mathcl@solution@fig@place{}
-\newcommand{\MathclSolutionFigPlace}[1]{
-    \renewcommand\@mathcl@solution@fig@place{#1}
-}
+% solution
+\newcommand\@lnpro@solution{}
+\newcommand{\MathclSolution}[1]{\renewcommand\@lnpro@solution{#1}}
+\newcommand\@lnpro@solution{\fangsong 【详解】}
 
 % note
-\newcommand\@mathcl@note{}
-\newcommand{\MathclNote}[1]{
-    \renewcommand\@mathcl@note{#1}
-}
+\newcommand\@lnpro@note{}
+\newcommand{\MathclNote}[1]{\renewcommand\@lnpro@note{#1}}
+\newcommand\@lnpro@note@prefix{\fangsong 【注记】}
 
 % comment
-\newcommand\@mathcl@comment{}
-\newcommand{\MathclComment}[1]{
-    \renewcommand\@mathcl@comment{#1}
-}
+\newcommand\@lnpro@comment{}
+\newcommand{\MathclComment}[1]{\renewcommand\@lnpro@comment{#1}}
+\newcommand\@lnpro@comment@prefix{\fangsong 【评论】}
 
 % info
-\newcommand\@mathcl@info{}
-\newcommand{\MathclInfo}[1]{
-    \renewcommand\@mathcl@info{#1}
+\newcommand\@lnpro@info{}
+\newcommand{\MathclInfo}[1]{\renewcommand\@lnpro@info{#1}}
+\newcommand\@lnpro@info@prefix{\fangsong 【备注】}
+
+% clear
+\newcommand\@lnpro@clear{
+\renewcommand\@lnpro@label{}
+\renewcommand\@lnpro@tag{}
+\renewcommand\@lnpro@problem{}
+\renewcommand\@lnpro@topics{}
+\renewcommand\@lnpro@answer{}
+\renewcommand\@lnpro@hint{}
+\renewcommand\@lnpro@solution{}
+\renewcommand\@lnpro@note{}
+\renewcommand\@lnpro@comment{}
+\renewcommand\@lnpro@info{}
 }
 
-
-
-
-
-% =====================================================================
-% 处理文档选项
-% =====================================================================
-\newif\if@teacher \@teachertrue
-
-\DeclareOption{teacher}{\@teachertrue}
-\DeclareOption{student}{\@teacherfalse}
-\ProcessOptions
-
-
-
-
-
-
-\newcommand\@mathcl@visibility{visible}
-
-\if@teacher
-\renewcommand\@mathcl@visibility{visible}
+% answer visibility
+\newcommand\@lnpro@ans@visibility{visible}
+\if@teacher@
+%\renewcommand\@lnpro@ans@visibility{visible}
 \else
-\renewcommand\@mathcl@visibility{invisible}
+\renewcommand\@lnpro@ans@visibility{invisible}
 \fi
 
 
@@ -442,36 +488,6 @@
 % [cmd] \MathclUseAsExample
 % ---------------------------------------------------------
 
-\newcommand\@mathcltag@hint{\fangsong 【提示】}
-\newcommand{\MathclTagHint}[1]{
-    \renewcommand\@mathcltag@hint{#1}
-}
-
-\newcommand\@mathcltag@answer{\fangsong 【答案】}
-\newcommand{\MathclTagAnswer}[1]{
-    \renewcommand\@mathcltag@answer{#1}
-}
-
-\newcommand\@mathcltag@solution{\fangsong 【详解】}
-\newcommand{\MathclTagSolution}[1]{
-    \renewcommand\@mathcltag@solution{#1}
-}
-
-\newcommand\@mathcltag@note{\fangsong 【注记】}
-\newcommand{\MathclTagNote}[1]{
-    \renewcommand\@mathcltag@note{#1}
-}
-
-\newcommand\@mathcltag@comment{\fangsong 【评论】}
-\newcommand{\MathclTagComment}[1]{
-    \renewcommand\@mathcltag@comment{#1}
-}
-
-\newcommand\@mathcltag@info{\fangsong 【备注】}
-\newcommand{\MathclTagInfo}[1]{
-    \renewcommand\@mathcltag@info{#1}
-}
-
 
 \newenvironment{lecturenote}{
 %\begin{tcolorbox}
@@ -480,15 +496,17 @@
 }{\vfil}
 
 \newcommand{\knodetitle}[1]{
-\needspace{0.3\textheight}
-\tcbox[beamer, halign = flush center, coltext = white, colback = blue!50]{\bcetoile~\bfseries#1}
+\needspace{3\baselineskip}
+\tcbox[beamer,
+    halign = flush center,
+    coltext = white,
+    colback = blue!50]{\bcetoile~\bfseries #1}
 }
 
 \newenvironment{knode}[1]{
 \ifthenelse{\isempty{#1}}{}{\knodetitle{#1}}
 }{\vfil}
 
-\newcommand{\@mathcl@exampletitle}{}
 \newcounter{cnt@example}[chapter]
 \newtcolorbox[
     use counter = cnt@example,
@@ -507,88 +525,51 @@
     after upper = \singlespacing,
     lower separated=false,
     before lower = \small,
-    lowerbox = \@mathcl@visibility,
+    lowerbox = \@lnpro@ans@visibility,
     after = \vfil,
 }
 
 
+\newcommand{\@lnpro@example@title}{}
 \newcommand{\MathclExample}{
-\if@teacher % 教师版要显示题目编号 (problem label)
-\renewcommand{\@mathcl@exampletitle}{\@mathcl@tag \hfill {\texttt\@mathcl@label}}
+\if@teacher@ % 教师版要显示题目编号 (problem label)
+\renewcommand{\@lnpro@example@title}{\@lnpro@tag \hfill \fbox{\texttt\@lnpro@label}}
 \else
-\renewcommand{\@mathcl@exampletitle}{\@mathcl@tag}
+\renewcommand{\@lnpro@example@title}{\@lnpro@tag}
 \fi
-\begin{examplebox}{\@mathcl@exampletitle}
+\begin{examplebox}{\@lnpro@example@title}
 % 题干
-\ifthenelse{
-    \equal{}{\@mathcl@problem@fig}
-}{% THEN part, if there is no fig
-    \@mathcl@problem
-}{% ELSE part, if there is a fig
-    \ifthenelse{
-        \equal{center}{\@mathcl@problem@fig@place}
-    }{% THEN part, if \@mathcl@problem@fig@place == center
-        \@mathcl@problem
-        \begin{center}
-        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
-        \end{center}
-    }{% ELSE part, if \@mathcl@problem@fig@place != center
-        \begin{wrapfigure}{r}{\@mathcl@problem@fig@width}
-        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
-        \end{wrapfigure}
-        \@mathcl@problem
-    }
-}
-%%%%%%%%%
-\tcblower
-%%%%%%%%%
+\ifthenelse{\equal{}{\@lnpro@problem}}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem}
+
 % 提示 
-\ifthenelse{\equal{}{\@mathcl@hint}   }{}{\@mathcltag@hint    \@mathcl@hint    \\}
+\ifthenelse{\equal{}{\@lnpro@hint}   }{}{\@lnpro@hint@prefix    \@lnpro@hint   }
+
+%%%%%%%%%%
+\tcblower%
+%%%%%%%%%%
+
 % 答案
-\ifthenelse{\equal{}{\@mathcl@answer} }{}{\@mathcltag@answer  \@mathcl@answer  \\}
+\ifthenelse{\equal{}{\@lnpro@answer} }{}{\@lnpro@answer@prefix  \@lnpro@answer }
+
 % 详解
-\ifthenelse{
-    \equal{}{\@mathcl@solution@fig}
-}{% THEN part, if there is no fig
-    \@mathcltag@solution \@mathcl@solution
-}{% ELSE part, if there is a fig
-    \ifthenelse{
-        \equal{center}{\@mathcl@solution@fig@place}
-    }{% THEN part, if \@mathcl@solution@fig@place == center
-        \@mathcltag@solution \@mathcl@solution
-        \begin{center}
-        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
-        \end{center}
-    }{% ELSE part, if \@mathcl@solution@fig@place != center
-        \begin{wrapfigure}{r}{\@mathcl@solution@fig@width}
-        \includegraphics[width=\@mathcl@solution@fig@width]{\@mathcl@solution@fig}
-        \end{wrapfigure}
-        \@mathcltag@solution \@mathcl@solution
-    }
-}
+\@lnpro@solution@prefix \@lnpro@solution
+
 % 注记
-\ifthenelse{\equal{}{\@mathcl@note}   }{}{\\ \@mathcltag@note    \@mathcl@note   }
+\ifthenelse{\equal{}{\@lnpro@note}   }{}{\@lnpro@note@prefix    \@lnpro@note   }
+
 % 评论
-\ifthenelse{\equal{}{\@mathcl@comment}}{}{\\ \@mathcltag@comment \@mathcl@comment}
+\ifthenelse{\equal{}{\@lnpro@comment}}{}{\@lnpro@comment@prefix \@lnpro@comment}
+
 % 备注
-\ifthenelse{\equal{}{\@mathcl@info}   }{}{\\ \@mathcltag@info    \@mathcl@info   }
+\ifthenelse{\equal{}{\@lnpro@info}   }{}{\@lnpro@info@prefix    \@lnpro@info   }
 \end{examplebox}
 
-
 % 清空相关信息
-\MathclLabel{}
-\MathclTag{}
-\MathclProblem{\bfseries\color{red} 当前没有题干！！！！！}
-\MathclTopics{}
-\MathclAnswer{}
-\MathclHint{}
-\MathclSolution{}
-\MathclNote{}
-\MathclComment{}
-\MathclInfo{}
+\@lnpro@clear
 }
 
-\newcommand{\MathclUseAsExample}[1]{\import{\@mathcl@repodir}{#1} \MathclExample}
+\newcommand{\MathclUseAsExample}[1]{ % TODO: reimplement this!!!
+\import{\@mathcl@repodir}{#1} \MathclExample}
 
 
 % ---------------------------------------------------------
@@ -617,7 +598,7 @@
     before upper = {\thetcbcounter.~\ifthenelse{\equal{}{#2}}{}{(#2)~}},
     #1,
     %before lower = \@answertag\\,
-    lowerbox = \@mathcl@visibility,
+    lowerbox = \@lnpro@ans@visibility,
     %after lower = \vspace{1cm},
     after = \vfil,
 }
@@ -710,9 +691,9 @@
     opacityback = 0,
     before upper = {\thetcbcounter.~({#2}~分\ifthenelse{\equal{}{#3}}{}{,~#3})},
     #1,
-    upperbox = \@mathcl@visibility,
+    upperbox = \@lnpro@ans@visibility,
     lower separated=false,
-    lowerbox = \@mathcl@visibility,
+    lowerbox = \@lnpro@ans@visibility,
     after = \vfil,
 }
 

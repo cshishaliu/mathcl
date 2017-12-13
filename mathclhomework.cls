@@ -6,15 +6,13 @@
 %
 \NeedsTeXFormat{LaTeX2e}
 
-\ProvidesClass{mathcllecnote}[2017/08/15]
+\ProvidesClass{mathclhomework}[2017/11/15]
 
 \LoadClass{ctexbook}
 
 \RequirePackage{geometry}
 
 \RequirePackage{fancyhdr}
-
-\RequirePackage{hyperref}
 
 \RequirePackage{setspace}
 %\singlespacing
@@ -98,7 +96,7 @@
     outer = 3cm,
     top = 3cm,
     bottom = 3cm,
-    marginparsep = 2mm,
+    marginparsep = 5mm,
     marginparwidth = 2cm,
 }
 
@@ -167,15 +165,11 @@
     chapter={
         pagestyle = fancy,
         name = {第,讲},
-        nameformat = \chapternameformat,
+        %nameformat = \chapternameformat,
         number = \arabic{chapter},
-        aftername = {},
-        titleformat = \chaptertitleformat,
-        aftertitle = {},
-    },
-    subsection={
-        format = \raggedright\normalsize\kaishu,
-        %titleformat = \subsectitleformat,
+        %aftername = {},
+        %titleformat = \chaptertitleformat,
+        %aftertitle = {},
     }
 }
 \newcommand\chapternameformat[1]{
@@ -407,29 +401,17 @@
 % =====================================================================
 % 处理文档选项
 % =====================================================================
-\newif\if@teacher \@teachertrue
-
-\DeclareOption{teacher}{\@teachertrue}
-\DeclareOption{student}{\@teacherfalse}
-\ProcessOptions
 
 
-
-
-
-
-\newcommand\@mathcl@visibility{visible}
-
-\if@teacher
-\renewcommand\@mathcl@visibility{visible}
-\else
-\renewcommand\@mathcl@visibility{invisible}
-\fi
+\newcommand\@mathcl@visibility{invisible}
 
 
 % =====================================================================
 % 定义文档中的各种结构块的环境
 % =====================================================================
+
+
+
 
 \newenvironment{preamble}{}{\vfil}
 
@@ -513,11 +495,7 @@
 
 
 \newcommand{\MathclExample}{
-\if@teacher % 教师版要显示题目编号 (problem label)
-\renewcommand{\@mathcl@exampletitle}{\@mathcl@tag \hfill {\texttt\@mathcl@label}}
-\else
 \renewcommand{\@mathcl@exampletitle}{\@mathcl@tag}
-\fi
 \begin{examplebox}{\@mathcl@exampletitle}
 % 题干
 \ifthenelse{
@@ -600,10 +578,6 @@
 % ---------------------------------------------------------
 
 \newenvironment{homework}{%
-\clearpage%
-\begin{tcolorbox}
-作业
-\end{tcolorbox}
 }{\vfill}
 
 \newcounter{cnt@exercise}[chapter]
@@ -624,13 +598,8 @@
 
 \newcommand{\MathclExercise}{
 \begin{exercisebox}{\@mathcl@tag}
-\if@teacher % 教师版要显示题目编号 (problem label)
-\marginnote{\texttt\@mathcl@label}
-\fi
 % 题干
 \@mathcl@problem
-% 提示
-\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\@mathcltag@hint   \@mathcl@hint  }
 \ifthenelse{
     \equal{}{\@mathcl@problem@fig}
 }{% THEN part, if there is no fig
@@ -639,6 +608,8 @@
     \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
     \end{flushright}
 }
+% 提示
+\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\@mathcltag@hint   \@mathcl@hint  }
 \tcblower
 % 答案
 \ifthenelse{\equal{}{\@mathcl@answer}  }{}{\@mathcltag@answer \@mathcl@answer \\}
@@ -693,11 +664,6 @@
 \newenvironment{classtest}{%
 \clearpage%
 \begin{tcolorbox}
-\if@teacher
-测试
-\else
-本节笔记
-\fi
 \end{tcolorbox}
 }{\vfill}
 
@@ -720,18 +686,25 @@
 
 \newcommand{\MathclQuestion}[1]{
 \begin{questionbox}{#1}{\@mathcl@tag}
-\if@teacher % 教师版要显示题目编号 (problem label)
-\marginnote{\texttt\@mathcl@label}
-\fi
 % 题干
-\@mathcl@problem
 \ifthenelse{
     \equal{}{\@mathcl@problem@fig}
 }{% THEN part, if there is no fig
+    \@mathcl@problem
 }{% ELSE part, if there is a fig
-    \begin{flushright}
-    \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
-    \end{flushright}
+    \ifthenelse{
+        \equal{center}{\@mathcl@problem@fig@place}
+    }{% THEN part, if \@mathcl@problem@fig@place == center
+        \@mathcl@problem
+        \begin{center}
+        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
+        \end{center}
+    }{% ELSE part, if \@mathcl@problem@fig@place != center
+        \begin{wrapfigure}{r}{\@mathcl@problem@fig@width}
+        \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
+        \end{wrapfigure}
+        \@mathcl@problem
+    }
 }
 \tcblower
 % 提示
@@ -775,16 +748,17 @@
 
 \newcommand{\MathclUseAsQuestion}[2]{\import{\@mathcl@repodir}{#2} \MathclQuestion{#1}}
 
-% ---------------------------------------------------------
-% 考试讲次的环境和命令
-% [env] examination     考试讲次环境
-% [env] sectionC        选择题部分
-% [env] sectionB        填空题部分
-% [env] sectionF        解答题部分
-% [env] examquestionbox 考试题盒子
-% [cmd] \MathclExamQuestion
-% [cmd] \MathclUseAsExamQuestion
-% ---------------------------------------------------------
 
-\newenvironment{examination}{}{}
+
+
+
+
+
+% =====================================================================
+% 处理需要忽略的环境
+% =====================================================================
+
+\excludeversion{preamble}
+\excludeversion{lecturenote}
+\excludeversion{classtest}
 

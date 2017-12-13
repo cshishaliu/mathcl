@@ -86,13 +86,15 @@ def pe_md2tex_figproc(text):
         m = re.match('!\[(?P<alttext>.*?)\]\((?P<figname>.*?)\)', text_list[1])
         fig = m.group('figname')
         alttext = m.group('alttext')
-        text_list = re.split(',?\s*(width|height)\s*=\s*', alttext)
+        text_list = re.split(',?\s*(width|height|place)\s*=\s*', alttext)
         if len(text_list) == 1:
             figwidth, figheight = text_list[0], ''
         else:
             figwidth = text_list[text_list.index('width') + 1]
             if 'height' in text_list:
                 figheight = text_list[text_list.index('height') + 1]
+            if 'place' in text_list:
+                figplace = text_list[text_list.index('place') + 1]
 
         widthval, widthunit = re.match('\s*(\d+(?:\.\d*)?)\s*(cm|mm|pt|in)', figwidth).groups()
         widthval = float(widthval)
@@ -103,7 +105,8 @@ def pe_md2tex_figproc(text):
         elif widthunit == 'in':
             widthval *= 25.4
 
-        figplace = 'center' if widthval > 60 else 'wrap'
+        if not figplace:
+            figplace = 'center' if widthval > 60 else 'wrap'
 
     return text, fig, figwidth, figheight, figplace
 
@@ -236,7 +239,7 @@ class ProblemEntry:
         else:
             # there is extra content
             # TODO: reimplement this using Warnings
-            print('More contents found in file [%s]' % self.src)
+            print('More contents found in file [%s], label: [%s].' % (self.src, self.label))
 
         # process _pre, to get tag (if exists), problem and topics
         _slices = [s.strip() for s in re.split('^\s*`(.*)`\s*$', _pre, flags=re.MULTILINE)]

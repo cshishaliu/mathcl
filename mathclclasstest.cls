@@ -6,15 +6,15 @@
 %
 \NeedsTeXFormat{LaTeX2e}
 
-\ProvidesClass{mathcllecnote}[2017/08/15]
+\ProvidesClass{mathclclasstest}[2017/11/15]
 
 \LoadClass{ctexbook}
+
+\RequirePackage{calc}
 
 \RequirePackage{geometry}
 
 \RequirePackage{fancyhdr}
-
-\RequirePackage{hyperref}
 
 \RequirePackage{setspace}
 %\singlespacing
@@ -98,7 +98,7 @@
     outer = 3cm,
     top = 3cm,
     bottom = 3cm,
-    marginparsep = 2mm,
+    marginparsep = 5mm,
     marginparwidth = 2cm,
 }
 
@@ -122,8 +122,6 @@
         \fill[blue!20] (current page.south west) -- (current page.south east) -- ++ (0, 2) -| cycle;
         \draw[anchor=base] (current page.north west) ++ (2,-1.5)
         node(pageno) {\bfseries\thepage};
-        \draw[anchor=base west] (pageno.base east)
-        node (chapmark) {\bfseries 高思数学/竞赛体系/\@mathcl@grade\@mathcl@subject\@mathcl@class/\@mathcl@year\@mathcl@term};
         \end{tikzpicture}
     }
     \fancyhead[RO]{%
@@ -132,8 +130,9 @@
         \fill[blue!20] (current page.south west) -- (current page.south east) -- ++ (0, 2) -| cycle;
         \draw[anchor=base] (current page.north east) ++ (-2,-1.5) node
         (pageno) {\bfseries\thepage};
-        \draw[anchor=base east] (pageno.base west)
-        node (chapmark) {\bfseries\leftmark};
+        \draw[anchor=base west] (current page.north west) ++ (2,-1.5)
+        node {\bfseries 高思数学/竞赛体系/\@mathcl@grade\@mathcl@subject\@mathcl@class/\@mathcl@year\@mathcl@term\qquad 进门考};
+        %\draw[anchor=base east] (pageno.base west) node (chapmark) {\bfseries\leftmark};
         \end{tikzpicture}
     }
     \pagestyle{fancy}
@@ -169,38 +168,23 @@
         name = {第,讲},
         nameformat = \chapternameformat,
         number = \arabic{chapter},
-        aftername = {},
+        aftername = {\normalsize\quad},
         titleformat = \chaptertitleformat,
-        aftertitle = {},
-    },
-    subsection={
-        format = \raggedright\normalsize\kaishu,
-        %titleformat = \subsectitleformat,
+        %aftertitle = {},
     }
 }
 \newcommand\chapternameformat[1]{
-    \rightline{%
-        \tcbox[enhanced,
-        rotate=-15,
-        colframe = blue!50,
-        coltext = blue!60,
-        colback = white,
-        squeezed title= \@mathcl@year~\@mathcl@term/\@mathcl@grade,
-        fonttitle = \normalsize\fangsong,
-        fontupper = \Large\kaishu,
-        ]{#1}
-    }
+\@mathcl@grade\@mathcl@subject\@mathcl@class 测试\\[1em]
+
+\normalsize #1
 }
 \newcommand\chaptertitleformat[1]{%
-    \begin{tcolorbox}[beamer,
-        halign = flush center,
-        coltext = white,
-        colback = blue!50,
-        ]%
-        #1
-    \end{tcolorbox}
+\normalsize #1\\%
+{\normalfont{} $\blacktriangleright$ 请在下一讲课前使用 $\blacktriangleleft$}
+\begin{flushright}
+\kaishu 姓名:~\blank~分数:~\blank~
+\end{flushright}
 }
-
 
 
 
@@ -407,29 +391,17 @@
 % =====================================================================
 % 处理文档选项
 % =====================================================================
-\newif\if@teacher \@teachertrue
-
-\DeclareOption{teacher}{\@teachertrue}
-\DeclareOption{student}{\@teacherfalse}
-\ProcessOptions
 
 
-
-
-
-
-\newcommand\@mathcl@visibility{visible}
-
-\if@teacher
-\renewcommand\@mathcl@visibility{visible}
-\else
-\renewcommand\@mathcl@visibility{invisible}
-\fi
+\newcommand\@mathcl@visibility{invisible}
 
 
 % =====================================================================
 % 定义文档中的各种结构块的环境
 % =====================================================================
+
+
+
 
 \newenvironment{preamble}{}{\vfil}
 
@@ -513,11 +485,7 @@
 
 
 \newcommand{\MathclExample}{
-\if@teacher % 教师版要显示题目编号 (problem label)
-\renewcommand{\@mathcl@exampletitle}{\@mathcl@tag \hfill {\texttt\@mathcl@label}}
-\else
 \renewcommand{\@mathcl@exampletitle}{\@mathcl@tag}
-\fi
 \begin{examplebox}{\@mathcl@exampletitle}
 % 题干
 \ifthenelse{
@@ -600,10 +568,6 @@
 % ---------------------------------------------------------
 
 \newenvironment{homework}{%
-\clearpage%
-\begin{tcolorbox}
-作业
-\end{tcolorbox}
 }{\vfill}
 
 \newcounter{cnt@exercise}[chapter]
@@ -624,13 +588,8 @@
 
 \newcommand{\MathclExercise}{
 \begin{exercisebox}{\@mathcl@tag}
-\if@teacher % 教师版要显示题目编号 (problem label)
-\marginnote{\texttt\@mathcl@label}
-\fi
 % 题干
 \@mathcl@problem
-% 提示
-\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\@mathcltag@hint   \@mathcl@hint  }
 \ifthenelse{
     \equal{}{\@mathcl@problem@fig}
 }{% THEN part, if there is no fig
@@ -639,6 +598,8 @@
     \includegraphics[width=\@mathcl@problem@fig@width]{\@mathcl@problem@fig}
     \end{flushright}
 }
+% 提示
+\ifthenelse{\equal{}{\@mathcl@hint}    }{}{\@mathcltag@hint   \@mathcl@hint  }
 \tcblower
 % 答案
 \ifthenelse{\equal{}{\@mathcl@answer}  }{}{\@mathcltag@answer \@mathcl@answer \\}
@@ -691,14 +652,6 @@
 % ---------------------------------------------------------
 
 \newenvironment{classtest}{%
-\clearpage%
-\begin{tcolorbox}
-\if@teacher
-测试
-\else
-本节笔记
-\fi
-\end{tcolorbox}
 }{\vfill}
 
 \newcounter{cnt@question}[chapter]
@@ -710,7 +663,7 @@
     opacityback = 0,
     before upper = {\thetcbcounter.~({#2}~分\ifthenelse{\equal{}{#3}}{}{,~#3})},
     #1,
-    upperbox = \@mathcl@visibility,
+    %upperbox = \@mathcl@visibility,
     lower separated=false,
     lowerbox = \@mathcl@visibility,
     after = \vfil,
@@ -720,9 +673,6 @@
 
 \newcommand{\MathclQuestion}[1]{
 \begin{questionbox}{#1}{\@mathcl@tag}
-\if@teacher % 教师版要显示题目编号 (problem label)
-\marginnote{\texttt\@mathcl@label}
-\fi
 % 题干
 \@mathcl@problem
 \ifthenelse{
@@ -775,16 +725,17 @@
 
 \newcommand{\MathclUseAsQuestion}[2]{\import{\@mathcl@repodir}{#2} \MathclQuestion{#1}}
 
-% ---------------------------------------------------------
-% 考试讲次的环境和命令
-% [env] examination     考试讲次环境
-% [env] sectionC        选择题部分
-% [env] sectionB        填空题部分
-% [env] sectionF        解答题部分
-% [env] examquestionbox 考试题盒子
-% [cmd] \MathclExamQuestion
-% [cmd] \MathclUseAsExamQuestion
-% ---------------------------------------------------------
 
-\newenvironment{examination}{}{}
+
+
+
+
+
+% =====================================================================
+% 处理需要忽略的环境
+% =====================================================================
+
+\excludeversion{preamble}
+\excludeversion{lecturenote}
+\excludeversion{homework}
 
