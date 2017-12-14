@@ -135,6 +135,7 @@
 % ---------------------------------------------------------
 % 页面尺寸
 % ---------------------------------------------------------
+\if@lecnote@
 \geometry{
     bindingoffset = 1cm, % 装订线
     inner = 2cm,
@@ -144,6 +145,43 @@
     marginparsep = 0.3cm,
     marginparwidth = 2cm,
 }
+\fi
+
+\if@homework@
+\geometry{
+    bindingoffset = 0cm,
+    inner = 3cm,
+    outer = 3cm,
+    top = 3cm,
+    bottom = 3cm,
+    marginparsep = 0.3cm,
+    marginparwidth = 2cm,
+}
+\fi
+
+\if@classtest@
+\geometry{
+    bindingoffset = 0cm,
+    inner = 2cm,
+    outer = 2cm,
+    top = 2cm,
+    bottom = 2cm,
+    marginparsep = 0.5cm,
+    marginparwidth = 1cm,
+}
+\fi
+
+\if@answerbook@
+\geometry{
+    bindingoffset = 0cm,
+    inner = 2cm,
+    outer = 2cm,
+    top = 2cm,
+    bottom = 2cm,
+    marginparsep = 0.5cm,
+    marginparwidth = 1cm,
+}
+\fi
 
 % ---------------------------------------------------------
 % 页眉和页脚 TODO: 待完善
@@ -169,7 +207,7 @@
     \draw[anchor=base] (current page.north west) ++ (2,-1.5)
     node(pageno) {\bfseries\thepage};
     \draw[anchor=base west] (pageno.base east)
-    node (chapmark) {\bfseries 高思数学/竞赛体系/\@lninfo@grade\@lninfo@subject\@lninfo@class/\@lninfo@year\@lninfo@term};
+    node (chapmark) {\bfseries \@lninfo@brand/\@lninfo@catalog/\@lninfo@grade\@lninfo@subject\@lninfo@class/\@lninfo@year\@lninfo@term};
     \end{tikzpicture}
 }
 \fancyhead[RO]{%
@@ -281,11 +319,13 @@
 % ---------------------------------------------------------
 % 讲义信息
 % ---------------------------------------------------------
-\newcommand\@lninfo@grade{高一}   % 年级
+\newcommand\@lninfo@brand{高思数学} % 品牌
+\newcommand\@lninfo@catalog{竞赛体系} % 体系类别
+\newcommand\@lninfo@grade{高一} % 年级
 \newcommand\@lninfo@subject{数学} % 科目
 \newcommand\@lninfo@class{联赛班} % 班型
-\newcommand\@lninfo@year{2017}    % 年份
-\newcommand\@lninfo@term{暑假}    % 学期 (暑秋寒春)
+\newcommand\@lninfo@year{2017} % 年份
+\newcommand\@lninfo@term{暑假} % 学期 (暑/秋/寒/春)
 
 \newcommand\setgrade[1]{\renewcommand\@lninfo@grade{#1}}
 \newcommand\setsubject[1]{\renewcommand\@lninfo@subject{#1}}
@@ -381,12 +421,24 @@
 \newkeycommand\lnfigure[enum place={wrapright,wrapleft,right,center,left,inline}][OtherKeys][2]{%
 \renewcommand\ln@put@figure{\ifthenelse{\equal{#1}{}}{}{\graphicspath{{#1}}}\includegraphics[OtherKeys]{#2}}%
 \settowidth\ln@figure@width{\ln@put@figure}%
-\ifthenelse{\equal{\commandkey}{wrapright}}{\begin{wrapfigure}{r}{\ln@figure@width}\ln@put@figure\end{wrapfigure}}{}%
-\ifthenelse{\equal{\commandkey}{wrapleft} }{\begin{wrapfigure}{l}{\ln@figure@width}\ln@put@figure\end{wrapfigure}}{}%
-\ifthenelse{\equal{\commandkey}{right}    }{\begin{flushright}\ln@put@figure\end{flushright}}{}%
-\ifthenelse{\equal{\commandkey}{center}   }{\begin{center}\ln@put@figure\end{center}}{}%
-\ifthenelse{\equal{\commandkey}{left}     }{\begin{flushleft}\ln@put@figure\end{flushleft}}{}%
-\ifthenelse{\equal{\commandkey}{inline}   }{\ln@put@figure}{}%
+\ifthenelse{
+  \equal{\commandkey}{wrapright}
+}{\begin{wrapfigure}{r}{\ln@figure@width}\ln@put@figure\end{wrapfigure}}{}%
+\ifthenelse{
+  \equal{\commandkey}{wrapleft}
+}{\begin{wrapfigure}{l}{\ln@figure@width}\ln@put@figure\end{wrapfigure}}{}%
+\ifthenelse{
+  \equal{\commandkey}{right}
+}{\begin{flushright}\ln@put@figure\end{flushright}}{}%
+\ifthenelse{
+  \equal{\commandkey}{center}
+}{\begin{center}\ln@put@figure\end{center}}{}%
+\ifthenelse{
+  \equal{\commandkey}{left}
+}{\begin{flushleft}\ln@put@figure\end{flushleft}}{}%
+\ifthenelse{
+  \equal{\commandkey}{inline}
+}{\ln@put@figure}{}%
 }
 
 % ---------------------------------------------------------
@@ -415,6 +467,11 @@
 % problem
 \newcommand\@lnpro@problem{}
 \newcommand{\MathclProblem}[1]{\renewcommand\@lnpro@problem{#1}}
+\newcommand{\@lnpro@print@problem}{%
+\ifthenelse{
+  \equal{}{\@lnpro@problem}
+}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem\\}
+}
 
 % topics
 \newcommand\@lnpro@topics{}
@@ -424,31 +481,61 @@
 \newcommand\@lnpro@answer{}
 \newcommand{\MathclAnswer}[1]{\renewcommand\@lnpro@answer{#1}}
 \newcommand\@lnpro@answer@prefix{\fangsong 【答案】}
+\newcommand{\@lnpro@print@answer}{%
+\ifthenelse{
+  \equal{}{\@lnpro@answer}
+}{}{\@lnpro@answer@prefix\@lnpro@answer\\}
+}
 
 % hint
 \newcommand\@lnpro@hint{}
 \newcommand{\MathclHint}[1]{\renewcommand\@lnpro@hint{#1}}
 \newcommand\@lnpro@hint@prefix{\fangsong 【提示】}
+\newcommand{\@lnpro@print@hint}{%
+\ifthenelse{
+  \equal{}{\@lnpro@hint}
+}{}{\@lnpro@hint@prefix\@lnpro@hint\\}
+}
 
 % solution
 \newcommand\@lnpro@solution{}
 \newcommand{\MathclSolution}[1]{\renewcommand\@lnpro@solution{#1}}
 \newcommand\@lnpro@solution{\fangsong 【详解】}
+\newcommand{\@lnpro@print@solution}{%
+\ifthenelse{
+  \equal{}{\@lnpro@solution}
+}{\bfseries\Huge\color{red} 当前没有解答！}{\@lnpro@solution@prefix\@lnpro@solution\\}
+}
 
 % note
 \newcommand\@lnpro@note{}
 \newcommand{\MathclNote}[1]{\renewcommand\@lnpro@note{#1}}
 \newcommand\@lnpro@note@prefix{\fangsong 【注记】}
+\newcommand{\@lnpro@print@note}{%
+\ifthenelse{
+  \equal{}{\@lnpro@note}
+}{}{\@lnpro@note@prefix\@lnpro@note\\}
+}
 
 % comment
 \newcommand\@lnpro@comment{}
 \newcommand{\MathclComment}[1]{\renewcommand\@lnpro@comment{#1}}
 \newcommand\@lnpro@comment@prefix{\fangsong 【评论】}
+\newcommand{\@lnpro@print@comment}{%
+\ifthenelse{
+  \equal{}{\@lnpro@comment}
+}{}{\@lnpro@comment@prefix\@lnpro@comment\\}
+}
 
 % info
 \newcommand\@lnpro@info{}
 \newcommand{\MathclInfo}[1]{\renewcommand\@lnpro@info{#1}}
 \newcommand\@lnpro@info@prefix{\fangsong 【备注】}
+\newcommand{\@lnpro@print@info}{%
+\ifthenelse{
+  \equal{}{\@lnpro@info}
+}{}{\@lnpro@info@prefix\@lnpro@info\\}
+}
 
 % clear all problem information
 \newcommand\@lnpro@clear{
@@ -472,6 +559,16 @@
 \renewcommand\@lnpro@ans@visibility{invisible}
 \fi
 
+\newcommand\@lnpro@box@title{}
+
+\newlength\@lnpro@box@upper@vspace
+\newlength\@lnpro@box@lower@vspace
+
+\newcommand{\MathclVspace}[2]{%
+\setlength\@lnpro@box@upper@vspace{#1}
+\setlength\@lnpro@box@lower@vspace{#2}
+}
+
 
 % =====================================================================
 % 定义文档中的各种结构块的环境
@@ -493,7 +590,7 @@
 %\begin{tcolorbox}
 %知识精讲和例题解析
 %\end{tcolorbox}
-}{\vfil}
+}{}
 
 \newcommand{\knodetitle}[1]{
 \needspace{3\baselineskip}
@@ -507,6 +604,8 @@
 \ifthenelse{\isempty{#1}}{}{\knodetitle{#1}}
 }{\vfil}
 
+
+
 \newcounter{cnt@example}[chapter]
 \newtcolorbox[
     use counter = cnt@example,
@@ -514,23 +613,24 @@
     enhanced jigsaw,
     blanker,
     %colframe = blue!80!black,
-    colbacktitle=blue!80!black,
     %colback=blue!10,
     opacityback = 0,
+    #1,
     coltitle = blue!80!black,
+    colbacktitle=blue!80!black,
     fonttitle = \bfseries,
     title = {\bccrayon~例~\thetcbcounter:~#2},
-    #1,
     before upper = \setlength{\parskip}{0.1\baselineskip},
-    after upper = \singlespacing,
+    %upperbox = ,
+    after upper = \vspace{\@lnpro@box@upper@vspace},
     lower separated=false,
     before lower = \small,
     lowerbox = \@lnpro@ans@visibility,
+    after lower = \vspace{\@lnpro@box@lower@vspace},
     after = \vfil,
 }
 
 
-\newcommand{\@lnpro@box@title}{}
 
 \newcommand{\MathclExample}{
 \if@teacher@ % 教师版要显示题目编号 (problem label)
@@ -540,38 +640,28 @@
 \fi
 
 \begin{examplebox}{\@lnpro@box@title}
-% 题干
-\ifthenelse{\equal{}{\@lnpro@problem}}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem}
-
-% 提示
-\ifthenelse{\equal{}{\@lnpro@hint}   }{}{\@lnpro@hint@prefix    \@lnpro@hint   }
-
+\@lnpro@print@problem
+\@lnpro@print@hint
 %%%%%%%%%%
 \tcblower%
 %%%%%%%%%%
-
-% 答案
-\ifthenelse{\equal{}{\@lnpro@answer} }{}{\@lnpro@answer@prefix  \@lnpro@answer }
-
-% 详解
-\@lnpro@solution@prefix \@lnpro@solution
-
-% 注记
-\ifthenelse{\equal{}{\@lnpro@note}   }{}{\@lnpro@note@prefix    \@lnpro@note   }
-
-% 评论
-\ifthenelse{\equal{}{\@lnpro@comment}}{}{\@lnpro@comment@prefix \@lnpro@comment}
-
-% 备注
-\ifthenelse{\equal{}{\@lnpro@info}   }{}{\@lnpro@info@prefix    \@lnpro@info   }
+\@lnpro@print@answer
+\@lnpro@print@solution
+\@lnpro@print@note
+\@lnpro@print@comment
+\@lnpro@print@info
 \end{examplebox}
 
 % 清空相关信息
 \@lnpro@clear
+\MathclVspace{0pt}{0pt}
 }
 
-\newcommand{\MathclUseAsExample}[1]{% TODO: reimplement this!!!
-\import{\@mathcl@repodir}{#1} \MathclExample}
+\newcommand{\MathclUseAsExample}[2]{%
+\graphicspath{#1}
+\import{#1}{#2}
+\MathclExample
+}
 
 
 % ---------------------------------------------------------
@@ -596,14 +686,16 @@
     enhanced jigsaw,
     colframe = white,
     opacityback = 0,
-    lower separated = false,
-    fonttitle = \normalfont,
-    title = {习题 \thetcbcounter.~\ifthenelse{\equal{}{#2}}{}{#2}},
-    %before upper = ,
     #1,
-    %before lower = \@answertag\\,
+    fonttitle = \normalfont,
+    title = {\thetcbcounter.~\ifthenelse{\equal{}{#2}}{}{#2}},
+    %before upper = ,
+    %upperbox = ,
+    after upper = \vspace{\@lnpro@box@upper@vspace},
+    lower separated = false,
+    before lower = \small,
     lowerbox = \@lnpro@ans@visibility,
-    %after lower = \vspace{1cm},
+    after lower = \vspace{\@lnpro@box@lower@vspace},
     after = \vfil,
 }
 
@@ -615,29 +707,25 @@
 \fi
 
 \begin{exercisebox}{\@lnpro@box@title}
-% 题干
-\ifthenelse{\equal{}{\@lnpro@problem}}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem}
-
-% 提示
-\ifthenelse{\equal{}{\@lnpro@hint}   }{}{\@lnpro@hint@prefix   \@lnpro@hint  }
-
+\@lnpro@print@problem
+\@lnpro@print@hint
 %%%%%%%%%%
 \tcblower%
 %%%%%%%%%%
-
-% 答案
-\ifthenelse{\equal{}{\@lnpro@answer} }{}{\@lnpro@answer@prefix \@lnpro@answer}
-
-% 详解
-\@lnpro@solution@prefix \@lnpro@solution
+\@lnpro@print@answer
+\@lnpro@print@solution
 \end{exercisebox}
 
 % 清空相关信息
 \@lnpro@clear
+\MathclVspace{0pt}{0pt}
 }
 
-\newcommand{\MathclUseAsExercise}[1]{% TODO: reimplement this!
-\import{\@mathcl@repodir}{#1} \MathclExercise}
+\newcommand{\MathclUseAsExercise}[2]{%
+\graphicspath{#1}
+\import{#1}{#2}
+\MathclExercise
+}
 
 
 
@@ -668,13 +756,16 @@
     enhanced jigsaw,
     colframe = white,
     opacityback = 0,
+    #1,
     fonttitle = \normalfont,
     title = {\thetcbcounter.~({#2}~分)~\ifthenelse{\equal{}{#3}}{}{#3}},
     %before upper = ,
-    #1,
     upperbox = \@lnpro@ans@visibility,
-    lower separated=false,
+    after upper = \vspace{\@lnpro@box@upper@vspace},
+    lower separated = false,
+    before lower = \small,
     lowerbox = \@lnpro@ans@visibility,
+    after lower = \vspace{\@lnpro@box@lower@vspace},
     after = \vfil,
 }
 
@@ -689,29 +780,25 @@
 
 
 \begin{questionbox}{#1}{\@lnpro@box@title}
-% 题干
-\ifthenelse{\equal{}{\@lnpro@problem}}{\bfseries\Huge\color{red} 当前没有题干！}{\@lnpro@problem}
-
-% 提示
-\ifthenelse{\equal{}{\@lnpro@hint}   }{}{\@lnpro@hint@prefix   \@lnpro@hint  }
-
+\@lnpro@print@problem
+\@lnpro@print@hint
 %%%%%%%%%%
 \tcblower%
 %%%%%%%%%%
-
-% 答案
-\ifthenelse{\equal{}{\@lnpro@answer} }{}{\@lnpro@answer@prefix \@lnpro@answer}
-
-% 详解
-\@lnpro@solution@prefix \@lnpro@solution
+\@lnpro@print@answer
+\@lnpro@print@solution
 \end{questionbox}
 
 % 清空相关信息
 \@lnpro@clear
+\MathclVspace{0pt}{0pt}
 }
 
-\newcommand{\MathclUseAsQuestion}[2]{% TODO: reimplement this!
-\import{\@mathcl@repodir}{#2} \MathclQuestion{#1}}
+\newcommand{\MathclUseAsQuestion}[2]{%
+\graphicspath{#1}
+\import{#1}{#2}
+\MathclQuestion{#1}
+}
 
 % ---------------------------------------------------------
 % 考试讲次的环境和命令
